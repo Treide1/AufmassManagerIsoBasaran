@@ -46,7 +46,7 @@ fun ValidatedInput(
                 buildAnnotatedString {
                     append(labelText)
                     if (isRequired) withStyle(style = SpanStyle(color = Color.Red)) {
-                        append(" *")
+                        append("*")
                     }
                 }
             )

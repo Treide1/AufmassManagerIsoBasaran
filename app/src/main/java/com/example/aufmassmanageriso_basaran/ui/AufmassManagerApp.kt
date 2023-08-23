@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationItem
 import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationWrapper
+import com.example.aufmassmanageriso_basaran.ui.screens.AddEntryScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.SettingsScreen
 import com.example.aufmassmanageriso_basaran.ui.state.MainViewModel
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
@@ -29,7 +30,7 @@ fun AufmassManagerApp(mainViewModel: MainViewModel = MainViewModel()) {
                 icon = Icons.Filled.AddBox,
                 route = "add_entry",
                 screen = {  modifier ->
-                    Text("entry screen", modifier = modifier)
+                    AddEntryScreen(model = mainViewModel, modifier = modifier)
                 }
             )
         )
