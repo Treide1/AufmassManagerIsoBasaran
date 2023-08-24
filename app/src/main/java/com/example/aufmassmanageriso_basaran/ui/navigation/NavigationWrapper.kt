@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddBox
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SyncProblem
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -22,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
@@ -29,13 +32,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.aufmassmanageriso_basaran.R
+import com.example.aufmassmanageriso_basaran.ui.state.MainViewModel
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
 import kotlinx.coroutines.launch
 
@@ -43,13 +45,14 @@ data class NavigationItem(
     val title: String,
     val icon: ImageVector,
     val route: String,
-    val screen: @Composable (modifier: Modifier) -> Unit
+    val screen: @Composable () -> Unit
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavigationWrapper(
     items: List<NavigationItem>,
+    model: MainViewModel = MainViewModel(),
     startDestination: String = items.first().route
 ) {
     val navController = rememberNavController()
@@ -92,41 +95,51 @@ fun NavigationWrapper(
     ) {
         // Screen wrapping with scaffold (containing top app bar)
         // and navigable content
+        val isSynced by model.isSyncedWithServer.collectAsState()
         Scaffold(
             topBar = {
-                NavigationTopAppBar {
-                    scope.launch { drawerState.open() }
-                }
+                val title = items[selectedItemIndex].title
+                TopAppBar(
+                    title = { Text(title) },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                scope.launch { drawerState.open() }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = null
+                            )
+                        }
+                    },
+                    actions = {
+                        if (isSynced.not()) {
+                            Icon(imageVector = Icons.Default.SyncProblem, contentDescription = null)
+                        }
+                    }
+                )
             },
         ) { padding ->
-            NavHost(
-                navController = navController,
-                startDestination = startDestination
+            Surface(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize(),
+                color = MaterialTheme.colorScheme.surfaceVariant
             ) {
-                items.forEach { item ->
-                    composable(item.route) {
-                        item.screen(Modifier.padding(padding))
+                NavHost(
+                    navController = navController,
+                    startDestination = startDestination
+                ) {
+                    items.forEach { item ->
+                        composable(item.route) {
+                            item.screen()
+                        }
                     }
                 }
             }
         }
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun NavigationTopAppBar(onClickMenuIcon: () -> Unit) {
-    TopAppBar(
-        title = { Text(stringResource(R.string.app_name)) },
-        navigationIcon = {
-            IconButton(onClick = onClickMenuIcon) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = null
-                )
-            }
-        }
-    )
 }
 
 @Preview(showBackground = true, widthDp = 320, heightDp = 640)
@@ -136,22 +149,18 @@ fun NavigationWrapperPreview() {
         val items = listOf(
             NavigationItem(
                 title = "Einstellungen",
-                icon = Icons.Filled.Menu,
+                icon = Icons.Filled.Settings,
                 route = "settings",
-                screen = { modifier ->
-                    Surface(modifier = modifier.fillMaxSize()) {
-                        Text("settings screen")
-                    }
+                screen = {
+                    Text("settings screen")
                 }
             ),
             NavigationItem(
                 title = "Eintrag hinzufügen",
                 icon = Icons.Filled.AddBox,
                 route = "add_entry",
-                screen = { modifier ->
-                    Surface(modifier = modifier.fillMaxSize()) {
-                        Text("entry screen")
-                    }
+                screen = {
+                    Text("entry screen")
                 }
             )
         )

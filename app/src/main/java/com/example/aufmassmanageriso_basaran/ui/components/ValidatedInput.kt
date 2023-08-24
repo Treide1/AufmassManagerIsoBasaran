@@ -1,5 +1,6 @@
 package com.example.aufmassmanageriso_basaran.ui.components
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -40,7 +41,7 @@ fun ValidatedInput(
         onValueChange = {
             textValue = cleanInput(it)
         },
-        modifier = Modifier.padding(bottom = 16.dp),
+        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
         label = {
             Text(
                 buildAnnotatedString {
