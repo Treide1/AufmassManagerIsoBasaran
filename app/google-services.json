@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "781035018482",
+    "project_id": "aufmass-manager-iso-basaran",
+    "storage_bucket": "aufmass-manager-iso-basaran.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:781035018482:android:c4c302ac068e2dbbe1586b",
+        "android_client_info": {
+          "package_name": "com.example.aufmassmanageriso_basaran"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "781035018482-vq4cto9aao5nckh12c5udlb2o0rk7ldi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgv7XpGbMcYaBB6nCmHdQw4kKE_3Jxh8k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "781035018482-vq4cto9aao5nckh12c5udlb2o0rk7ldi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
