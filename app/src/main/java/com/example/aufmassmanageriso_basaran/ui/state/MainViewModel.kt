@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.aufmassmanageriso_basaran.data.remote.BauvorhabenDto
 import com.example.aufmassmanageriso_basaran.data.remote.FirestoreDao
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -38,11 +39,14 @@ class MainViewModel: ViewModel() {
 
     val isSyncedWithServer: StateFlow<Boolean> = FirestoreDao.isSyncedWithServer
 
+    /////////////////////////////////////////////////////////////
+
     //var allBauvorhaben by StateFlowWrapper<List<BauvorhabenDto>>(emptyList())
     private val _allBauvorhaben = MutableStateFlow<List<BauvorhabenDto>>(emptyList())
     val allBauvorhaben = _allBauvorhaben.asStateFlow()
 
-    var selectedBauvorhaben by StateFlowWrapper<BauvorhabenDto?>(null)
+    private val _selectedBauvorhaben = MutableStateFlow<BauvorhabenDto?>(null)
+    var selectedBauvorhaben = _selectedBauvorhaben.asStateFlow()
 
     fun fetchBauvorhaben() {
         FirestoreDao.getAllBauvorhaben { task ->
@@ -67,6 +71,10 @@ class MainViewModel: ViewModel() {
         }
     }
 
+    fun selectBauvorhaben(dto: BauvorhabenDto) {
+        _selectedBauvorhaben.update { dto }
+    }
+
 
     /////////////////////////////////////////////////////////////
 
@@ -78,16 +86,16 @@ class MainViewModel: ViewModel() {
     val isSearching = _isSearching.asStateFlow()
 
     /**
-     * Search results are the combination of the search text and the list of all bauvorhaben.
+     * Search results are the computed using the search text and the list of all bauvorhaben.
      */
+    @OptIn(FlowPreview::class)
     val searchResults = searchText
-        .debounce(1000L)
         .onEach { _isSearching.update { true } }
+        .debounce(300L)
         .combine(_allBauvorhaben) { text, bauvorhabenList ->
             if(text.isBlank()) {
                 bauvorhabenList
             } else {
-                delay(2000L)
                 bauvorhabenList.filter { bauvorhaben ->
                     bauvorhaben.doesMatchSearchQuery(text)
                 }
@@ -107,4 +115,5 @@ class MainViewModel: ViewModel() {
     private fun BauvorhabenDto.doesMatchSearchQuery(query: String): Boolean {
         return bauvorhaben.contains(query, ignoreCase = true)
     }
+
 }

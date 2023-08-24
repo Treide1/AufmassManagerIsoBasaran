@@ -125,7 +125,7 @@ fun NavigationWrapper(
                 modifier = Modifier
                     .padding(padding)
                     .fillMaxSize(),
-                color = MaterialTheme.colorScheme.surfaceVariant
+                color = MaterialTheme.colorScheme.background
             ) {
                 NavHost(
                     navController = navController,
