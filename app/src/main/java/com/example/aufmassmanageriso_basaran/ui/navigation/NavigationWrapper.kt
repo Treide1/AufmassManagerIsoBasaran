@@ -25,17 +25,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.SavedStateHandle
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -56,14 +57,13 @@ data class NavigationItem(
 fun NavigationWrapper(
     items: List<NavigationItem>,
     navHostController: NavHostController = rememberNavController(),
-    model: MainViewModel = MainViewModel(SavedStateHandle()),
-    startDestination: String = items.first().route
+    model: MainViewModel = MainViewModel(),
+    startItem: NavigationItem = items.first()
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
+    var screenTitle by remember { mutableStateOf(startItem.title) }
 
-    // TODO: Fix back stack behaviour (update title + only go back to "information", then exit)
     // Drawer for app navigation
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -71,15 +71,24 @@ fun NavigationWrapper(
         drawerContent = {
             ModalDrawerSheet {
                 Spacer(modifier = Modifier.height(16.dp))
-                items.forEachIndexed { index, item ->
+                items.forEach { item ->
                     NavigationDrawerItem(
                         label = {
                             Text(text = item.title)
                         },
-                        selected = index == selectedItemIndex,
+                        selected = navHostController.currentDestination?.route == item.route,
                         onClick = {
-                            navHostController.navigate(item.route)
-                            selectedItemIndex = index
+                            navHostController.navigate(item.route) {
+                                // Pop up to the start destination of the graph, then select item
+                                popUpTo(navHostController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                // Avoid multiple copies of the same destination
+                                launchSingleTop = true
+                                // Restore state when reselecting a previously selected item
+                                restoreState = true
+                            }
+
                             scope.launch { drawerState.close() }
                         },
                         icon = {
@@ -95,14 +104,12 @@ fun NavigationWrapper(
             }
         }
     ) {
-        // Screen wrapping with scaffold (containing top app bar)
-        // and navigable content
+        // Screen wrapping with scaffold (containing top app bar) of the navigable content
         val isSynced by model.isSyncedWithServer.collectAsState()
         Scaffold(
             topBar = {
-                val title = items[selectedItemIndex].title
                 TopAppBar(
-                    title = { Text(title) },
+                    title = { Text(screenTitle) },
                     navigationIcon = {
                         IconButton(
                             onClick = {
@@ -132,10 +139,11 @@ fun NavigationWrapper(
             ) {
                 NavHost(
                     navController = navHostController,
-                    startDestination = startDestination
+                    startDestination = startItem.route
                 ) {
                     items.forEach { item ->
                         composable(item.route) {
+                            LaunchedEffect(item.route) { screenTitle = item.title }
                             item.screen()
                         }
                     }
