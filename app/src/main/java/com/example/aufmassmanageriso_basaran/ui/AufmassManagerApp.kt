@@ -8,6 +8,8 @@ import androidx.compose.material.icons.filled.LibraryAdd
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationItem
 import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationWrapper
 import com.example.aufmassmanageriso_basaran.ui.screens.AddEntryScreen
@@ -20,20 +22,26 @@ import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTh
  * Main entry point for the app. Contains a [NavigationWrapper] with the different screens.
  */
 @Composable
-fun AufmassManagerApp(mainViewModel: MainViewModel = MainViewModel()) {
+fun AufmassManagerApp(
+    mainViewModel: MainViewModel = MainViewModel(),
+    navHostController: NavHostController = rememberNavController()
+) {
     NavigationWrapper(
         items = listOf(
             NavigationItem(
                 title = "Informationen",
                 icon = Icons.Filled.Info,
                 route = "info",
-                screen = { Text(text = "Informationen") }
+                screen = { Text(text = "Allgemeine Informationen über die App +\n aktuelle Informationen (z.B. Probleme)") }
             ),
             NavigationItem(
                 title = "Bauvorhaben hinzufügen",
                 icon = Icons.Filled.LibraryAdd,
                 route = "bauvorhaben_add",
-                screen = { CreateBauvorhabenScreen(model = mainViewModel) }
+                screen = { CreateBauvorhabenScreen(
+                    model = mainViewModel,
+                    onAbort = { navHostController.navigateUp() }
+                ) }
             ),
             NavigationItem(
                 title = "Bauvorhaben auswählen",
@@ -48,6 +56,7 @@ fun AufmassManagerApp(mainViewModel: MainViewModel = MainViewModel()) {
                 screen = { AddEntryScreen(model = mainViewModel) }
             )
         ),
+        navHostController = navHostController,
         model = mainViewModel
     )
 }

@@ -1,10 +1,10 @@
 package com.example.aufmassmanageriso_basaran
 
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
 import com.example.aufmassmanageriso_basaran.ui.AufmassManagerApp
 import com.example.aufmassmanageriso_basaran.ui.state.MainViewModel
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
@@ -15,7 +15,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             AufmassManagerIsoBasaranTheme {
                 val viewModel = viewModel<MainViewModel>()
-                AufmassManagerApp(viewModel)
+                val navController = rememberNavController()
+                AufmassManagerApp(viewModel, navController)
             }
         }
     }

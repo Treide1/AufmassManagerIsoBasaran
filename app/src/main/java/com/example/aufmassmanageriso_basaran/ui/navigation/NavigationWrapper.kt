@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddBox
 import androidx.compose.material.icons.filled.Menu
@@ -26,7 +27,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -34,6 +35,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.SavedStateHandle
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -52,20 +55,19 @@ data class NavigationItem(
 @Composable
 fun NavigationWrapper(
     items: List<NavigationItem>,
-    model: MainViewModel = MainViewModel(),
+    navHostController: NavHostController = rememberNavController(),
+    model: MainViewModel = MainViewModel(SavedStateHandle()),
     startDestination: String = items.first().route
 ) {
-    val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var selectedItemIndex by rememberSaveable {
-        mutableStateOf(0)
-    }
+    var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
 
+    // TODO: Fix back stack behaviour (update title + only go back to "information", then exit)
     // Drawer for app navigation
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = false,
+        gesturesEnabled = drawerState.isOpen,
         drawerContent = {
             ModalDrawerSheet {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -76,7 +78,7 @@ fun NavigationWrapper(
                         },
                         selected = index == selectedItemIndex,
                         onClick = {
-                            navController.navigate(item.route)
+                            navHostController.navigate(item.route)
                             selectedItemIndex = index
                             scope.launch { drawerState.close() }
                         },
@@ -117,6 +119,7 @@ fun NavigationWrapper(
                         if (isSynced.not()) {
                             Icon(imageVector = Icons.Default.SyncProblem, contentDescription = null)
                         }
+                        Spacer(modifier = Modifier.width(16.dp))
                     }
                 )
             },
@@ -128,7 +131,7 @@ fun NavigationWrapper(
                 color = MaterialTheme.colorScheme.background
             ) {
                 NavHost(
-                    navController = navController,
+                    navController = navHostController,
                     startDestination = startDestination
                 ) {
                     items.forEach { item ->

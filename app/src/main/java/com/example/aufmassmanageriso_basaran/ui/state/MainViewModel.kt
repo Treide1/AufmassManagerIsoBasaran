@@ -1,11 +1,13 @@
 package com.example.aufmassmanageriso_basaran.ui.state
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.aufmassmanageriso_basaran.data.local.BauvorhabenForm
+import com.example.aufmassmanageriso_basaran.data.mapping.toDto
 import com.example.aufmassmanageriso_basaran.data.remote.BauvorhabenDto
 import com.example.aufmassmanageriso_basaran.data.remote.FirestoreDao
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,70 +17,58 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlin.reflect.KProperty
 
 /**
-* Main view model holding the settings state and the entries state
+* Main view model holding the state values and performs state logic of the app.
  */
-class MainViewModel: ViewModel() {
+class MainViewModel(
+    private val savedStateHandle: SavedStateHandle = SavedStateHandle()
+): ViewModel() {
 
-    private class StateFlowWrapper<T>(initial: T) {
-        private val mutableStateFlow = MutableStateFlow(initial)
-        val stateFlow = mutableStateFlow.asStateFlow()
-
-        operator fun getValue(viewModel: ViewModel, property: KProperty<*>): T {
-            return stateFlow.value!!
-        }
-
-        operator fun setValue(viewModel: ViewModel, property: KProperty<*>, value: T) {
-            mutableStateFlow.update { value }
-        }
+    companion object {
+        private const val KEY_SELECTED_BAUVORHABEN = "selectedBauvorhaben"
     }
 
-    /////////////////////////////////////////////////////////////
+    /////////////////////////// CONNECTIVITY //////////////////////////////////
 
     val isSyncedWithServer: StateFlow<Boolean> = FirestoreDao.isSyncedWithServer
 
+    ///////////////////////////  FORM DATA   //////////////////////////////////
+
+    // Create Bauvorhaben
+    val bauvorhabenForm = BauvorhabenForm()
+
     /////////////////////////////////////////////////////////////
 
-    //var allBauvorhaben by StateFlowWrapper<List<BauvorhabenDto>>(emptyList())
     private val _allBauvorhaben = MutableStateFlow<List<BauvorhabenDto>>(emptyList())
     val allBauvorhaben = _allBauvorhaben.asStateFlow()
 
-    private val _selectedBauvorhaben = MutableStateFlow<BauvorhabenDto?>(null)
-    var selectedBauvorhaben = _selectedBauvorhaben.asStateFlow()
+    var selectedBauvorhaben = savedStateHandle
+        .getStateFlow(KEY_SELECTED_BAUVORHABEN, null as BauvorhabenDto?)
 
-    fun fetchBauvorhaben() {
+    fun fetchAllBauvorhaben() {
         FirestoreDao.getAllBauvorhaben { task ->
-            val docs = task.result?.documents
+            val docs = task.result.documents
             val dtoList = mutableListOf<BauvorhabenDto>()
-            for (doc in docs!!) {
-                val dto = BauvorhabenDto(
-                    bauvorhaben = doc["bauvorhaben"] as String,
-                    aufmassNummer = doc["aufmassNummer"] as Long,
-                    auftragsNummer = doc["auftragsNummer"] as Long?,
-                    notiz = doc["notiz"] as String?
-                )
-                dtoList.add(dto)
+            for (doc in docs) {
+                dtoList.add(doc.toDto())
             }
             _allBauvorhaben.update { dtoList }
         }
     }
 
-    fun createBauvorhaben(dto: BauvorhabenDto) {
-        FirestoreDao.createBauvorhaben(dto) { isSuccessful ->
-            println("CreateBauvorhaben: $isSuccessful")
+    fun createBauvorhaben(form: BauvorhabenForm) {
+        FirestoreDao.createBauvorhaben(form.toDto()) { isSuccessful ->
+            println("CreateBauvorhaben: isSuccessful=$isSuccessful")
         }
     }
 
     fun selectBauvorhaben(dto: BauvorhabenDto) {
-        _selectedBauvorhaben.update { dto }
+        savedStateHandle[KEY_SELECTED_BAUVORHABEN] = dto
     }
 
+    ///////////////////////////   SEARCH   //////////////////////////////////
 
-    /////////////////////////////////////////////////////////////
-
-    // Search
     private val _searchText = MutableStateFlow("")
     val searchText = _searchText.asStateFlow()
 

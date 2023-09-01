@@ -1,7 +1,5 @@
 package com.example.aufmassmanageriso_basaran.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,20 +8,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -35,16 +27,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.aufmassmanageriso_basaran.ui.state.MainViewModel
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
-import com.google.api.Distribution.BucketOptions.Linear
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,10 +42,12 @@ fun SelectBauvorhabenScreen(
     val searchText by model.searchText.collectAsState()
     val searchResults by model.searchResults.collectAsState()
     val isSearching by model.isSearching.collectAsState()
+    val allBauvorhaben by model.allBauvorhaben.collectAsState()
 
     // Fetch data when opening screen
     LaunchedEffect(Unit) {
-        model.fetchBauvorhaben()
+        // TODO: introduce TTL logic to invalidate cache (currently just invalid at start)
+        if(allBauvorhaben.isEmpty()) model.fetchAllBauvorhaben()
     }
 
     // Selection mask
@@ -85,10 +75,12 @@ fun SelectBauvorhabenScreen(
             ExposedDropdownMenu(
                 expanded = isSearchDisplayed,
                 onDismissRequest = {
+                    // TODO: Find good compromise (dismiss includes typing+clicking outside+typing "cancel")
                     //isSearchDisplayed = false
                 }
             ) {
                 if (isSearching) {
+                    // TODO: Fix broken progress indicator (displays 1st frame only)
                     DropdownMenuItem(
                         text = { LinearProgressIndicator(modifier = Modifier.height(24.dp)) },
                         onClick = {}
@@ -98,7 +90,7 @@ fun SelectBauvorhabenScreen(
                         DropdownMenuItem(
                             text = { Text(text = bauvorhabenDto.bauvorhaben) },
                             onClick = {
-                                println("Selected Bauvorhaben: ${bauvorhabenDto.bauvorhaben}")
+                                println("Selected Bauvorhaben: $bauvorhabenDto")
                                 model.selectBauvorhaben(bauvorhabenDto)
                                 isSearchDisplayed = false
                             }

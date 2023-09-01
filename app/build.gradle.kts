@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
+    id("kotlin-parcelize")
     id("com.google.gms.google-services")
     id("com.google.firebase.appdistribution")
 }
@@ -64,6 +65,7 @@ dependencies {
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
 
+    // Compose + Material Design
     implementation("androidx.activity:activity-compose:1.7.2")
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
     implementation("androidx.compose.ui:ui")
@@ -77,26 +79,15 @@ dependencies {
     // Compose Navigation
     implementation("androidx.navigation:navigation-compose:2.6.0")
 
-    // Google Sheets API
-    implementation("com.google.api-client:google-api-client:2.0.0")
-    implementation("com.google.oauth-client:google-oauth-client-jetty:1.34.1")
-    implementation("com.google.apis:google-api-services-sheets:v4-rev20220927-2.0.0")
-
     // Firebase (Firestore)
     implementation("com.google.firebase:firebase-firestore:24.7.0")
 
-    // TODO: needed ?
-    // Retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.3")
-
     // Room
-    implementation("androidx.room:room-ktx:2.5.1")
-    kapt("androidx.room:room-compiler:2.5.1")
-    implementation("androidx.room:room-paging:2.5.1")
+//    implementation("androidx.room:room-ktx:2.5.1")
+//    kapt("androidx.room:room-compiler:2.5.1")
+//    implementation("androidx.room:room-paging:2.5.1")
 
-    // LiveData
+    // ViewModel
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.6.1")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
 
