@@ -1,12 +1,13 @@
 package com.example.aufmassmanageriso_basaran.ui.state
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.aufmassmanageriso_basaran.data.local.BauvorhabenForm
 import com.example.aufmassmanageriso_basaran.data.mapping.toDto
 import com.example.aufmassmanageriso_basaran.data.remote.BauvorhabenDto
-import com.example.aufmassmanageriso_basaran.data.remote.FirestoreDao
+import com.example.aufmassmanageriso_basaran.data.remote.FirestoreRepo
+import com.example.aufmassmanageriso_basaran.data.settings.SettingsRepo
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -14,40 +15,60 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
 * Main view model holding the state values and performs state logic of the app.
  */
 class MainViewModel(
-    private val savedStateHandle: SavedStateHandle = SavedStateHandle()
+    private val settingsRepo: SettingsRepo
 ): ViewModel() {
-
-    companion object {
-        private const val KEY_SELECTED_BAUVORHABEN = "selectedBauvorhaben"
-    }
 
     /////////////////////////// CONNECTIVITY //////////////////////////////////
 
-    val isSyncedWithServer: StateFlow<Boolean> = FirestoreDao.isSyncedWithServer
+    val isSyncedWithServer: StateFlow<Boolean> = FirestoreRepo.isSyncedWithServer
 
     ///////////////////////////  FORM DATA   //////////////////////////////////
 
     // Create Bauvorhaben
     val bauvorhabenForm = BauvorhabenForm()
 
+    fun createBauvorhaben(form: BauvorhabenForm): List<String> {
+        val responses = mutableListOf<String>()
+        if (form.validate()) {
+            FirestoreRepo.createBauvorhaben(form.toDto()) { isSuccessful ->
+                println("CreateBauvorhaben: isSuccessful=$isSuccessful")
+            }
+            form.clearFields()
+            responses.add("Bauvorhaben wurde erstellt.")
+        } else {
+            responses.add("Bitte fülle alle Pflichtfelder aus.")
+        }
+        return responses
+    }
+
     /////////////////////////////////////////////////////////////
 
+    // Select Bauvorhaben
     private val _allBauvorhaben = MutableStateFlow<List<BauvorhabenDto>>(emptyList())
     val allBauvorhaben = _allBauvorhaben.asStateFlow()
 
-    var selectedBauvorhaben = savedStateHandle
-        .getStateFlow(KEY_SELECTED_BAUVORHABEN, null as BauvorhabenDto?)
+    val selectedBauvorhaben = settingsRepo.userPreferencesFlow
+        .map { settings ->
+            settings?.selectedBauvorhaben
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            null
+        )
 
     fun fetchAllBauvorhaben() {
-        FirestoreDao.getAllBauvorhaben { task ->
+        FirestoreRepo.getAllBauvorhaben { task ->
             val docs = task.result.documents
             val dtoList = mutableListOf<BauvorhabenDto>()
             for (doc in docs) {
@@ -57,14 +78,10 @@ class MainViewModel(
         }
     }
 
-    fun createBauvorhaben(form: BauvorhabenForm) {
-        FirestoreDao.createBauvorhaben(form.toDto()) { isSuccessful ->
-            println("CreateBauvorhaben: isSuccessful=$isSuccessful")
-        }
-    }
-
     fun selectBauvorhaben(dto: BauvorhabenDto) {
-        savedStateHandle[KEY_SELECTED_BAUVORHABEN] = dto
+        viewModelScope.launch {
+            settingsRepo.updateSelectedBauvorhaben(dto)
+        }
     }
 
     ///////////////////////////   SEARCH   //////////////////////////////////
@@ -106,4 +123,15 @@ class MainViewModel(
         return bauvorhaben.contains(query, ignoreCase = true)
     }
 
+}
+
+
+class MainViewModelFactory(
+    private val settingsRepo: SettingsRepo,
+): ViewModelProvider.Factory {
+
+    @Suppress("UNCHECKED_CAST") // Justification: We know the type of the view model.
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return MainViewModel(settingsRepo) as T
+    }
 }

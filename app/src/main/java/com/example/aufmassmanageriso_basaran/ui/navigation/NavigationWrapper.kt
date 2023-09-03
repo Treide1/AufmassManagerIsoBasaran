@@ -9,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddBox
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.SyncProblem
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,7 +25,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,7 +39,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.aufmassmanageriso_basaran.ui.state.MainViewModel
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
 import kotlinx.coroutines.launch
 
@@ -57,8 +54,8 @@ data class NavigationItem(
 fun NavigationWrapper(
     items: List<NavigationItem>,
     navHostController: NavHostController = rememberNavController(),
-    model: MainViewModel = MainViewModel(),
-    startItem: NavigationItem = items.first()
+    startItem: NavigationItem = items.first(),
+    actionImages: List<ImageVector> = emptyList(),
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -105,7 +102,6 @@ fun NavigationWrapper(
         }
     ) {
         // Screen wrapping with scaffold (containing top app bar) of the navigable content
-        val isSynced by model.isSyncedWithServer.collectAsState()
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -123,10 +119,10 @@ fun NavigationWrapper(
                         }
                     },
                     actions = {
-                        if (isSynced.not()) {
-                            Icon(imageVector = Icons.Default.SyncProblem, contentDescription = null)
+                        actionImages.forEach { image ->
+                            Icon(imageVector = image, contentDescription = null)
+                            Spacer(modifier = Modifier.width(16.dp))
                         }
-                        Spacer(modifier = Modifier.width(16.dp))
                     }
                 )
             },

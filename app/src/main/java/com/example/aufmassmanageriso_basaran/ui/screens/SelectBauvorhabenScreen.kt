@@ -19,8 +19,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,24 +29,21 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.aufmassmanageriso_basaran.ui.state.MainViewModel
+import com.example.aufmassmanageriso_basaran.data.remote.BauvorhabenDto
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectBauvorhabenScreen(
-    model: MainViewModel = MainViewModel(),
+    // Search
+    searchText: String = "",
+    searchResults: List<BauvorhabenDto> = emptyList(),
+    isSearching: Boolean = false,
+    onSearchTextChange: (String) -> Unit = {},
+    // Selection
+    selectedBauvorhaben: BauvorhabenDto? = null,
+    selectBauvorhaben: (BauvorhabenDto) -> Unit = {}
 ) {
-    val searchText by model.searchText.collectAsState()
-    val searchResults by model.searchResults.collectAsState()
-    val isSearching by model.isSearching.collectAsState()
-    val allBauvorhaben by model.allBauvorhaben.collectAsState()
-
-    // Fetch data when opening screen
-    LaunchedEffect(Unit) {
-        // TODO: introduce TTL logic to invalidate cache (currently just invalid at start)
-        if(allBauvorhaben.isEmpty()) model.fetchAllBauvorhaben()
-    }
 
     // Selection mask
     Column(
@@ -65,7 +60,7 @@ fun SelectBauvorhabenScreen(
         ) {
             TextField(
                 value = searchText,
-                onValueChange = model::onSearchTextChange,
+                onValueChange = onSearchTextChange,
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(),
@@ -91,7 +86,7 @@ fun SelectBauvorhabenScreen(
                             text = { Text(text = bauvorhabenDto.bauvorhaben) },
                             onClick = {
                                 println("Selected Bauvorhaben: $bauvorhabenDto")
-                                model.selectBauvorhaben(bauvorhabenDto)
+                                selectBauvorhaben(bauvorhabenDto)
                                 isSearchDisplayed = false
                             }
                         )
@@ -113,9 +108,7 @@ fun SelectBauvorhabenScreen(
         Text(text = "Ausgewähltes Bauvorhaben", fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(4.dp))
 
-        val selected by model.selectedBauvorhaben.collectAsState()
-
-        if (selected == null) {
+        if (selectedBauvorhaben == null) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -141,12 +134,11 @@ fun SelectBauvorhabenScreen(
                         .wrapContentHeight()
                         .padding(16.dp)
                 ) {
-
                     val bauvorhabenMap = mapOf(
-                        "Bauvorhaben" to selected?.bauvorhaben,
-                        "Aufmass-Nummer" to selected?.aufmassNummer?.toString(),
-                        "Auftrags-Nummer" to selected?.auftragsNummer?.toString(),
-                        "Notiz" to selected?.notiz
+                        "Bauvorhaben" to selectedBauvorhaben.bauvorhaben,
+                        "Aufmass-Nummer" to selectedBauvorhaben.aufmassNummer.toString(),
+                        "Auftrags-Nummer" to selectedBauvorhaben.auftragsNummer?.toString(),
+                        "Notiz" to selectedBauvorhaben.notiz
                     )
                     bauvorhabenMap.forEach { (key, value) ->
                         Text(text = key, fontWeight = FontWeight.SemiBold)
@@ -163,6 +155,13 @@ fun SelectBauvorhabenScreen(
 @Composable
 fun SelectBauvorhabenScreenPreview() {
     AufmassManagerIsoBasaranTheme {
-        SelectBauvorhabenScreen()
+        SelectBauvorhabenScreen(
+            selectedBauvorhaben = BauvorhabenDto(
+                bauvorhaben = "Bauvorhaben 1",
+                aufmassNummer = 1,
+                auftragsNummer = null,
+                notiz = "Notiz"
+            )
+        )
     }
 }

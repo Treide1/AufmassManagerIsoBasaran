@@ -3,12 +3,11 @@ package com.example.aufmassmanageriso_basaran.ui.screens
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.aufmassmanageriso_basaran.ui.state.MainViewModel
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
 
 @Composable
 fun AddEntryScreen(
-    model: MainViewModel = MainViewModel()
+    // model: MainViewModel = MainViewModel() // TODO: refactor to "State in, events out"
 ) {
     Text(text = "AddEntryScreen (TODO)")
 }

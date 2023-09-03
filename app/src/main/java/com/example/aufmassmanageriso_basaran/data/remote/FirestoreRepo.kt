@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 
-object FirestoreDao {
+object FirestoreRepo {
 
     private val db: FirebaseFirestore by lazy {
         FirebaseFirestore.getInstance().also {

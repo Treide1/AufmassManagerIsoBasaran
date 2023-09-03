@@ -26,17 +26,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.aufmassmanageriso_basaran.data.local.BauvorhabenForm
 import com.example.aufmassmanageriso_basaran.ui.components.FormFieldInput
-import com.example.aufmassmanageriso_basaran.ui.state.MainViewModel
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateBauvorhabenScreen(
-    model: MainViewModel = MainViewModel(),
+    form: BauvorhabenForm = BauvorhabenForm(),
+    createBauvorhaben: (BauvorhabenForm) -> List<String> = { emptyList() },
     onAbort: () -> Unit = {}
 ) {
-    val form = model.bauvorhabenForm
     val fields by form.fields.collectAsState()
     val context = LocalContext.current
 
@@ -85,14 +85,10 @@ fun CreateBauvorhabenScreen(
                 // Create
                 OutlinedButton(
                     onClick = {
-                        val msg = if (form.validate()) {
-                            model.createBauvorhaben(form)
-                            form.clearFields()
-                            "Bauvorhaben wurde erstellt."
-                        } else {
-                            "Bitte fülle alle Pflichtfelder aus."
+                        val responses = createBauvorhaben(form)
+                        responses.forEach { msg ->
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                         }
-                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                     }
                 ) {
                     Text(text = "Erstellen")
