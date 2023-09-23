@@ -9,8 +9,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.aufmassmanageriso_basaran.data.settings.SettingsRepo
 import com.example.aufmassmanageriso_basaran.ui.AufmassManagerApp
-import com.example.aufmassmanageriso_basaran.ui.state.MainViewModel
-import com.example.aufmassmanageriso_basaran.ui.state.MainViewModelFactory
+import com.example.aufmassmanageriso_basaran.presentation.MainViewModel
+import com.example.aufmassmanageriso_basaran.presentation.MainViewModelFactory
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
 
 private const val USER_PREFERENCES_NAME = "user_preferences"

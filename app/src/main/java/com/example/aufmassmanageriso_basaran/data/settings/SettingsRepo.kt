@@ -7,7 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.example.aufmassmanageriso_basaran.data.remote.BauvorhabenDto
+import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.BauvorhabenDto
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -31,7 +31,7 @@ class SettingsRepo(
         val preferences = this
         val dtoOrNull = run {
             BauvorhabenDto(
-                bauvorhaben = preferences[PreferencesKeys.selectedBauvorhaben_bauvorhaben] ?: return@run null,
+                name = preferences[PreferencesKeys.selectedBauvorhaben_bauvorhaben] ?: return@run null,
                 aufmassNummer = preferences[PreferencesKeys.selectedBauvorhaben_aufmassNummer] ?: return@run null,
                 auftragsNummer = preferences[PreferencesKeys.selectedBauvorhaben_auftragsNummer],
                 notiz = preferences[PreferencesKeys.selectedBauvorhaben_notiz],
@@ -45,7 +45,7 @@ class SettingsRepo(
      */
     suspend fun updateSelectedBauvorhaben(dto: BauvorhabenDto) {
         dataStore.edit { preferences ->
-            preferences[PreferencesKeys.selectedBauvorhaben_bauvorhaben] = dto.bauvorhaben
+            preferences[PreferencesKeys.selectedBauvorhaben_bauvorhaben] = dto.name
             preferences[PreferencesKeys.selectedBauvorhaben_aufmassNummer] = dto.aufmassNummer
             preferences[PreferencesKeys.selectedBauvorhaben_auftragsNummer] = dto.auftragsNummer ?: 0
             preferences[PreferencesKeys.selectedBauvorhaben_notiz] = dto.notiz ?: ""

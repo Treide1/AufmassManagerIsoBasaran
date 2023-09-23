@@ -4,8 +4,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 
 class BauvorhabenForm: Form() {
-    var bauvorhaben by addFormField(
-        "Bauvorhaben",
+    var name by addFormField(
+        "Name des Bauvorhaben",
         isRequired = true,
         keyboardType = KeyboardType.Text,
         imeAction = ImeAction.Next,

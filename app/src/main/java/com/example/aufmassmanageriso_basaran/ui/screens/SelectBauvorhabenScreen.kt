@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
@@ -25,24 +27,31 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.aufmassmanageriso_basaran.data.remote.BauvorhabenDto
+import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.BauvorhabenDto
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
 
+/**
+ * Screen for selecting a [BauvorhabenDto] based on a search query.
+ * The search is performed on the `name` attribute of the [BauvorhabenDto].
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectBauvorhabenScreen(
     // Search
     searchText: String = "",
-    searchResults: List<BauvorhabenDto> = emptyList(),
+    searchResults: List<String> = emptyList(),
     isSearching: Boolean = false,
-    onSearchTextChange: (String) -> Unit = {},
+    onSearchTextChange: (text: String) -> Unit = {},
     // Selection
     selectedBauvorhaben: BauvorhabenDto? = null,
-    selectBauvorhaben: (BauvorhabenDto) -> Unit = {}
+    selectBauvorhabenByName: (name: String) -> Unit = {}
 ) {
 
     // Selection mask
@@ -52,42 +61,52 @@ fun SelectBauvorhabenScreen(
             .padding(16.dp)
     ) {
         var isSearchDisplayed by remember { mutableStateOf(false) }
+        val focusRequester = remember { FocusRequester() }
 
         // Search results
         ExposedDropdownMenuBox(
             expanded = isSearchDisplayed,
-            onExpandedChange = { isSearchDisplayed = !isSearchDisplayed }
+            onExpandedChange = {
+                if (isSearchDisplayed) focusRequester.requestFocus()
+            }
         ) {
             TextField(
                 value = searchText,
                 onValueChange = onSearchTextChange,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor(),
+                    .menuAnchor()
+                    .focusRequester(focusRequester),
                 trailingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null) },
-                placeholder = { Text(text = "Suche") }
+                placeholder = { Text(text = "Suche") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = {
+                    isSearchDisplayed = true
+                    focusRequester.captureFocus()
+                })
             )
             ExposedDropdownMenu(
                 expanded = isSearchDisplayed,
                 onDismissRequest = {
-                    // TODO: Find good compromise (dismiss includes typing+clicking outside+typing "cancel")
-                    //isSearchDisplayed = false
+                    isSearchDisplayed = false
+                    focusRequester.freeFocus()
                 }
             ) {
                 if (isSearching) {
-                    // TODO: Fix broken progress indicator (displays 1st frame only)
                     DropdownMenuItem(
                         text = { LinearProgressIndicator(modifier = Modifier.height(24.dp)) },
                         onClick = {}
                     )
                 } else {
-                    searchResults.forEach { bauvorhabenDto ->
+                    searchResults.forEach { bauvorhabenName ->
                         DropdownMenuItem(
-                            text = { Text(text = bauvorhabenDto.bauvorhaben) },
+                            text = { Text(text = bauvorhabenName) },
                             onClick = {
-                                println("Selected Bauvorhaben: $bauvorhabenDto")
-                                selectBauvorhaben(bauvorhabenDto)
+                                println("Selected Bauvorhaben: $bauvorhabenName")
+                                selectBauvorhabenByName(bauvorhabenName)
                                 isSearchDisplayed = false
+                                focusRequester.freeFocus()
                             }
                         )
                     }
@@ -135,7 +154,7 @@ fun SelectBauvorhabenScreen(
                         .padding(16.dp)
                 ) {
                     val bauvorhabenMap = mapOf(
-                        "Bauvorhaben" to selectedBauvorhaben.bauvorhaben,
+                        "Bauvorhaben" to selectedBauvorhaben.name,
                         "Aufmass-Nummer" to selectedBauvorhaben.aufmassNummer.toString(),
                         "Auftrags-Nummer" to selectedBauvorhaben.auftragsNummer?.toString(),
                         "Notiz" to selectedBauvorhaben.notiz
@@ -157,7 +176,7 @@ fun SelectBauvorhabenScreenPreview() {
     AufmassManagerIsoBasaranTheme {
         SelectBauvorhabenScreen(
             selectedBauvorhaben = BauvorhabenDto(
-                bauvorhaben = "Bauvorhaben 1",
+                name = "Bauvorhaben 1",
                 aufmassNummer = 1,
                 auftragsNummer = null,
                 notiz = "Notiz"

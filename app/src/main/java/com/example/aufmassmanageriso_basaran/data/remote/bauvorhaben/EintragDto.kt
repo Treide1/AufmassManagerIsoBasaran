@@ -1,10 +1,9 @@
-package com.example.aufmassmanageriso_basaran.data.remote
+package com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben
 
 /**
- * Data transfer object for table "Eintraege".
+ * Data transfer object for collection "eintraege".
  */
 data class EintragDto(
-    val bauvorhaben: String,
     val bereich: String,
     val durchmesser: Int,
     val isolierung: String,

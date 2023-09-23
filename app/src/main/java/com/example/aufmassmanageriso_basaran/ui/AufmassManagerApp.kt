@@ -18,13 +18,12 @@ import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationWrapper
 import com.example.aufmassmanageriso_basaran.ui.screens.AddEntryScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.CreateBauvorhabenScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.SelectBauvorhabenScreen
-import com.example.aufmassmanageriso_basaran.ui.state.MainViewModel
-import kotlinx.coroutines.flow.first
+import com.example.aufmassmanageriso_basaran.presentation.MainViewModel
 
 /**
  * Main entry point for the app. Contains a [NavigationWrapper] with the different screens.
  *
- * This serves as the root composable for the app. Here, dependencies are passed to the different
+ * This serves as the root composable for the app. Here, dependencies are injected into the
  * screens.
  */
 @Composable
@@ -49,7 +48,11 @@ fun AufmassManagerApp(
                 screen = { CreateBauvorhabenScreen(
                     form = model.bauvorhabenForm,
                     createBauvorhaben = model::createBauvorhaben,
-                    onAbort = { navHostController.navigateUp() }
+                    onAbort = {
+                        // Clear form fields and navigate back
+                        model.bauvorhabenForm.clearFields()
+                        navHostController.navigateUp()
+                    }
                 ) }
             ),
             NavigationItem(
@@ -65,8 +68,7 @@ fun AufmassManagerApp(
 
                     // Fetch data when opening screen
                     LaunchedEffect(Unit) {
-                        // TODO: introduce TTL logic to invalidate cache (currently just invalid at start)
-                        if(model.allBauvorhaben.first().isEmpty()) model.fetchAllBauvorhaben()
+                        model.onOpenSelectBauvorhabenScreen()
                     }
 
                     SelectBauvorhabenScreen(
@@ -75,7 +77,7 @@ fun AufmassManagerApp(
                         isSearching = isSearching,
                         onSearchTextChange = model::onSearchTextChange,
                         selectedBauvorhaben = selectedBauvorhaben,
-                        selectBauvorhaben = model::selectBauvorhaben
+                        selectBauvorhabenByName = model::selectBauvorhaben
                     )
                 }
             ),

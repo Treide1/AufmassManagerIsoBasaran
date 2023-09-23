@@ -32,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -60,6 +61,7 @@ fun NavigationWrapper(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var screenTitle by remember { mutableStateOf(startItem.title) }
+    val focusManager = LocalFocusManager.current
 
     // Drawer for app navigation
     ModalNavigationDrawer(
@@ -110,6 +112,7 @@ fun NavigationWrapper(
                         IconButton(
                             onClick = {
                                 scope.launch { drawerState.open() }
+                                focusManager.clearFocus()
                             }
                         ) {
                             Icon(
