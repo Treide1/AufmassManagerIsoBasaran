@@ -3,7 +3,11 @@ package com.example.aufmassmanageriso_basaran.data.local
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 
+/**
+ * Form class for a new construction project (german: "Bauvorhaben").
+ */
 class BauvorhabenForm: Form() {
+
     var name by addFormField(
         "Name des Bauvorhaben",
         isRequired = true,
