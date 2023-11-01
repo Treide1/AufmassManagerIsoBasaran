@@ -5,9 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.aufmassmanageriso_basaran.data.local.BauvorhabenForm
+import com.example.aufmassmanageriso_basaran.data.local.EintragForm
 import com.example.aufmassmanageriso_basaran.data.mapping.toDto
 import com.example.aufmassmanageriso_basaran.data.remote.FirestoreRepo
 import com.example.aufmassmanageriso_basaran.data.settings.SettingsRepo
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -63,6 +65,26 @@ class MainViewModel(
         return responses
     }
 
+    // Create Eintrag
+    val eintragForm = EintragForm()
+
+    fun createEintrag(form: EintragForm): List<String> {
+        val responses = mutableListOf<String>()
+        if (form.validate()) {
+            // TODO: Create Eintrag
+            /*
+            FirestoreRepo.createEintrag(form.toDto()) { task ->
+                println("CreateEintrag: task.isSuccessful=${task.isSuccessful}")
+            }
+            */
+            form.clearFields()
+            responses.add("Eintrag wurde erstellt.")
+        } else {
+            responses.add("Bitte fülle alle Pflichtfelder aus.")
+        }
+        return responses
+    }
+
     /////////////////////////////////////////////////////////////
 
     // Select Bauvorhaben
@@ -75,14 +97,27 @@ class MainViewModel(
         }
         .stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
+            SharingStarted.WhileSubscribed(5000L),
             null
         )
 
+    @Suppress("UNCHECKED_CAST") // Justification: We know the type of the document.
     fun fetchBauvorhabenNames() {
         Log.d(TAG, "fetchBauvorhabenNames: Fetching...")
         FirestoreRepo.getMetaBauvorhabenDoc { task ->
             Log.d(TAG, "fetchBauvorhabenNames: getMetaBauvorhabenDoc.isSuccessful=${task.isSuccessful}")
+            // If task was not successful, log error, show Snackbar and return.
+            if (task.isSuccessful.not()) {
+                // TODO: Show snackbar or otherwise propagate error to user.
+                Log.e(TAG, "fetchBauvorhabenNames: Could not fetch bauvorhaben names.")
+                // Snackbar with exception message, if given
+                val msg = task.exception?.message ?: "Fehler beim Laden der Bauvorhaben."
+                viewModelScope.launch {
+                    _bauvorhabenNames.update { listOf(msg) }
+                }
+                return@getMetaBauvorhabenDoc
+            }
+
             val doc = task.result
             val projection = doc!!.get("projection_name") as List<String>
             _bauvorhabenNames.update { projection }

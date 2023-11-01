@@ -8,7 +8,7 @@ import androidx.compose.ui.text.input.KeyboardType
  */
 class BauvorhabenForm: Form() {
 
-    var name by addFormField(
+    var name by addTextFormField(
         "Name des Bauvorhaben",
         isRequired = true,
         keyboardType = KeyboardType.Text,
@@ -21,12 +21,12 @@ class BauvorhabenForm: Form() {
         },
     )
 
-    var aufmassNummer by addFormField(
+    var aufmassNummer by addTextFormField(
         "Aufmaß-Nummer",
         isRequired = true,
         keyboardType = KeyboardType.Number,
         imeAction = ImeAction.Next,
-        cleanInput = FormField::cleanInputJustNumbers,
+        cleanInput = TextFormField::cleanInputJustNumbers,
         onValidateToError = { value ->
             when {
                 value.isBlank() -> "Bitte geben Sie eine Aufmass-Nummer ein"
@@ -36,15 +36,15 @@ class BauvorhabenForm: Form() {
         }
     )
 
-    var auftragsNummer by addFormField(
+    var auftragsNummer by addTextFormField(
         "Auftrags-Nummer",
         isRequired = false,
         keyboardType = KeyboardType.Number,
         imeAction = ImeAction.Next,
-        cleanInput = FormField::cleanInputJustNumbers
+        cleanInput = TextFormField::cleanInputJustNumbers
     )
 
-    var notiz by addFormField(
+    var notiz by addTextFormField(
         "Notiz",
         isRequired = false,
         keyboardType = KeyboardType.Text,

@@ -2,6 +2,7 @@ package com.example.aufmassmanageriso_basaran.data.local
 
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -10,11 +11,11 @@ import kotlinx.coroutines.flow.update
 /**
  * Form class for defining forms.
  * Add a new form by extending this class.
- * Define the form fields as [FormField] properties of the class.
+ * Define the form fields as [TextFormField] properties of the class.
  */
 abstract class Form {
 
-    private val _fields = MutableStateFlow(mapOf<String, FormField>())
+    private val _fields = MutableStateFlow(listOf<FormField>())
 
     /**
      * The form fields of the form.
@@ -33,45 +34,78 @@ abstract class Form {
      * @param cleanInput A function that cleans the input of the form field on every text change.
      * @param onValidateToError A function that takes the current value of the form field and returns an error message if the value is invalid. Return `null` if the value is valid.
      */
-    fun addFormField(
+    fun addTextFormField(
         name: String,
         initialValue: String = "",
         isRequired: Boolean = false,
+        isRetained: Boolean = false,
         keyboardType: KeyboardType = KeyboardType.Text,
         imeAction: ImeAction = ImeAction.Default,
         cleanInput: (activeInput: String) -> String = { activeInput -> activeInput },
         onValidateToError: (value: String) -> String? = { null }
-    ): FormField {
-        return FormField(
-            initialValue, isRequired, keyboardType, imeAction, cleanInput, onValidateToError
-        ).also { field ->
-            _fields.update { fields -> fields + (name to field) }
-        }
-    }
+    ) = TextFormField(
+        name,
+        initialValue,
+        isRequired,
+        isRetained,
+        keyboardType,
+        imeAction,
+        cleanInput,
+        onValidateToError
+    ).also { _fields.update { fields -> fields + it } }
+
 
     /**
      * Add a new form field to the form that only accepts positive integers.
      *
-     * This is a specialization of [addFormField].
+     * This is a specialization of [addTextFormField].
      * It has those predefined values:
      * * keyboardType is [KeyboardType.Number]
-     * * cleanInput is [FormField.cleanInputJustNumbers]
+     * * cleanInput is [TextFormField.cleanInputJustNumbers]
      */
-    fun addNumberFormField(
+    fun addIntFormField(
         name: String,
         initialValue: String = "",
         isRequired: Boolean = false,
-        imeAction: ImeAction = ImeAction.Default,
+        isRetained: Boolean = false,
+        imeAction: ImeAction = ImeAction.Next,
         onValidateToError: (value: String) -> String? = { null }
-    ) = addFormField(
+    ) = addTextFormField(
         name,
         initialValue,
         isRequired,
+        isRetained,
         KeyboardType.Number,
         imeAction,
-        FormField::cleanInputJustNumbers,
+        TextFormField::cleanInputJustNumbers,
         onValidateToError
     )
+
+    fun addDecimalSummingFormField(
+        name: String,
+        initialValue: String = "",
+        isRequired: Boolean = false,
+        isRetained: Boolean = false,
+        imeAction: ImeAction = ImeAction.Next,
+        onValidateToError: (value: String) -> String? = { null }
+    ): TextFormField = TextFormField(
+        name,
+        initialValue,
+        isRequired,
+        isRetained,
+        KeyboardType.Phone,
+        imeAction,
+        TextFormField::cleanInputJustDecimalsAndPlus, //cleanInputSummingDecimals,
+        onValidateToError
+    ).also { _fields.update { fields -> fields + it } }
+
+    fun addDerivedFormField(
+        name: String,
+        derivedText: Flow<String>
+    ): DerivedFormField = DerivedFormField(
+        name,
+        derivedText
+    ).also { _fields.update { fields -> fields + it } }
 
     /**
      * Validates all form fields and returns whether the form is valid.
@@ -80,7 +114,7 @@ abstract class Form {
      * It is recommended to call `super.validate()` for consistency.
      */
     open fun validate(): Boolean {
-        return _fields.value.values.all { it.validate() }
+        return _fields.value.all { it.validate() }
     }
 
 
@@ -91,6 +125,6 @@ abstract class Form {
      * It is recommended to call `super.validate()` for consistency.
      */
     open fun clearFields() {
-        _fields.value.values.forEach { it.updateText("") }
+        _fields.value.forEach { it.clearIfNotRetained() }
     }
 }

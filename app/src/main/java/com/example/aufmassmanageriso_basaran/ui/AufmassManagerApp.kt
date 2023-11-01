@@ -1,5 +1,6 @@
 package com.example.aufmassmanageriso_basaran.ui
 
+import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddBox
 import androidx.compose.material.icons.filled.Construction
@@ -12,13 +13,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationItem
 import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationWrapper
-import com.example.aufmassmanageriso_basaran.ui.screens.AddEntryScreen
+import com.example.aufmassmanageriso_basaran.ui.screens.CreateEintragScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.CreateBauvorhabenScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.SelectBauvorhabenScreen
 import com.example.aufmassmanageriso_basaran.presentation.MainViewModel
+import kotlin.coroutines.coroutineContext
 
 /**
  * Main entry point for the app. Contains a [NavigationWrapper] with the different screens.
@@ -32,13 +36,14 @@ fun AufmassManagerApp(
     navHostController: NavHostController
 ) {
     val isSynced by model.isSyncedWithServer.collectAsState()
+    val home = "home"
 
     NavigationWrapper(
         items = listOf(
             NavigationItem(
                 title = "Informationen",
                 icon = Icons.Filled.Info,
-                route = "info",
+                route = home,
                 screen = { Text(text = "Allgemeine Informationen über die App +\n aktuelle Informationen (z.B. Probleme)") }
             ),
             NavigationItem(
@@ -51,7 +56,7 @@ fun AufmassManagerApp(
                     onAbort = {
                         // Clear form fields and navigate back
                         model.bauvorhabenForm.clearFields()
-                        navHostController.navigateUp()
+                        navHostController.navigate(home)
                     }
                 ) }
             ),
@@ -85,7 +90,27 @@ fun AufmassManagerApp(
                 title = "Eintrag hinzufügen",
                 icon = Icons.Filled.AddBox,
                 route = "add_entry",
-                screen = { AddEntryScreen() }
+                screen = {
+                    val selectedBauvorhaben by model.selectedBauvorhaben.collectAsState()
+
+                    if (selectedBauvorhaben == null) {
+                        // Navigate back if no bauvorhaben is selected
+                        navHostController.navigate(home)
+                        Toast.makeText(LocalContext.current, "Kein Bauvorhaben ausgewählt", Toast.LENGTH_SHORT).show()
+                    } else {
+                        CreateEintragScreen(
+                            coroutineContext = model.viewModelScope.coroutineContext,
+                            form = model.eintragForm,
+                            createEintrag = model::createEintrag,
+                            onAbort = {
+                                // Clear form fields and navigate back
+                                model.eintragForm.clearFields()
+                                navHostController.navigate(home)
+                            }
+                        )
+                    }
+
+                }
             )
         ),
         navHostController = navHostController,
