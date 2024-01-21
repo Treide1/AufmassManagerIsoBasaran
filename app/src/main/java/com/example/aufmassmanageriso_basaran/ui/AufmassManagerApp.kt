@@ -16,13 +16,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import com.example.aufmassmanageriso_basaran.presentation.MainViewModel
 import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationItem
 import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationWrapper
-import com.example.aufmassmanageriso_basaran.ui.screens.CreateEintragScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.CreateBauvorhabenScreen
+import com.example.aufmassmanageriso_basaran.ui.screens.CreateEintragScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.SelectBauvorhabenScreen
-import com.example.aufmassmanageriso_basaran.presentation.MainViewModel
-import kotlin.coroutines.coroutineContext
 
 /**
  * Main entry point for the app. Contains a [NavigationWrapper] with the different screens.
@@ -101,6 +100,7 @@ fun AufmassManagerApp(
                         CreateEintragScreen(
                             coroutineContext = model.viewModelScope.coroutineContext,
                             form = model.eintragForm,
+                            bauvorhabenName = selectedBauvorhaben!!.name,
                             createEintrag = model::createEintrag,
                             onAbort = {
                                 // Clear form fields and navigate back

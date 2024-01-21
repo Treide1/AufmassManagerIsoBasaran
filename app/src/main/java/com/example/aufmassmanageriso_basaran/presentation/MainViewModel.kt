@@ -9,7 +9,6 @@ import com.example.aufmassmanageriso_basaran.data.local.EintragForm
 import com.example.aufmassmanageriso_basaran.data.mapping.toDto
 import com.example.aufmassmanageriso_basaran.data.remote.FirestoreRepo
 import com.example.aufmassmanageriso_basaran.data.settings.SettingsRepo
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,7 +28,8 @@ import kotlinx.coroutines.launch
  */
 @Suppress("MemberVisibilityCanBePrivate")
 class MainViewModel(
-    private val settingsRepo: SettingsRepo
+    private val settingsRepo: SettingsRepo,
+    private val displayMsgToUser: (msg: String) -> Unit,
 ): ViewModel() {
 
     companion object {
@@ -51,38 +51,27 @@ class MainViewModel(
     // Create Bauvorhaben
     val bauvorhabenForm = BauvorhabenForm()
 
-    fun createBauvorhaben(form: BauvorhabenForm): List<String> {
-        val responses = mutableListOf<String>()
-        if (form.validate()) {
-            FirestoreRepo.createBauvorhaben(form.toDto()) { task ->
-                println("CreateBauvorhaben: task.isSuccessful=${task.isSuccessful}")
-            }
-            form.clearFields()
-            responses.add("Bauvorhaben wurde erstellt.")
-        } else {
-            responses.add("Bitte fülle alle Pflichtfelder aus.")
+    fun createBauvorhaben(form: BauvorhabenForm) {
+        Log.d(TAG, "createBauvorhaben: Creating. form=$form")
+        if (form.validate().not()) {
+            Log.d(TAG, "createBauvorhaben: Validation failed. form=$form")
+            displayMsgToUser("Bitte fülle alle Pflichtfelder aus.")
+            return
         }
-        return responses
-    }
+        Log.d(TAG, "createBauvorhaben: Validation success. form=$form")
 
-    // Create Eintrag
-    val eintragForm = EintragForm()
-
-    fun createEintrag(form: EintragForm): List<String> {
-        val responses = mutableListOf<String>()
-        if (form.validate()) {
-            // TODO: Create Eintrag
-            /*
-            FirestoreRepo.createEintrag(form.toDto()) { task ->
-                println("CreateEintrag: task.isSuccessful=${task.isSuccessful}")
+        FirestoreRepo.createBauvorhabenDoc(form.toDto()) { isSuccess ->
+            Log.d(TAG, "createBauvorhaben: isSuccess=$isSuccess")
+            if (isSuccess.not()) {
+                Log.e(TAG, "createBauvorhaben: Could not create bauvorhaben.")
+                displayMsgToUser("Fehler beim Erstellen des Bauvorhabens.")
+                return@createBauvorhabenDoc
             }
-            */
+            Log.d(TAG, "createBauvorhaben: Created. form=$form")
+            displayMsgToUser("Bauvorhaben wurde erstellt.")
+
             form.clearFields()
-            responses.add("Eintrag wurde erstellt.")
-        } else {
-            responses.add("Bitte fülle alle Pflichtfelder aus.")
         }
-        return responses
     }
 
     /////////////////////////////////////////////////////////////
@@ -95,6 +84,9 @@ class MainViewModel(
         .map { settings ->
             settings?.selectedBauvorhaben
         }
+        .onEach { selectedBauvorhaben ->
+            Log.d(TAG, "selectBauvorhaben: selectedBauvorhaben=$selectedBauvorhaben")
+        }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000L),
@@ -104,30 +96,21 @@ class MainViewModel(
     @Suppress("UNCHECKED_CAST") // Justification: We know the type of the document.
     fun fetchBauvorhabenNames() {
         Log.d(TAG, "fetchBauvorhabenNames: Fetching...")
-        FirestoreRepo.getMetaBauvorhabenDoc { task ->
-            Log.d(TAG, "fetchBauvorhabenNames: getMetaBauvorhabenDoc.isSuccessful=${task.isSuccessful}")
-            // If task was not successful, log error, show Snackbar and return.
-            if (task.isSuccessful.not()) {
-                // TODO: Show snackbar or otherwise propagate error to user.
-                Log.e(TAG, "fetchBauvorhabenNames: Could not fetch bauvorhaben names.")
-                // Snackbar with exception message, if given
-                val msg = task.exception?.message ?: "Fehler beim Laden der Bauvorhaben."
-                viewModelScope.launch {
-                    _bauvorhabenNames.update { listOf(msg) }
-                }
-                return@getMetaBauvorhabenDoc
+        FirestoreRepo.getMetaBauvorhabenDoc(
+            onSuccess = { doc ->
+                val projection = doc.get("projection_name") as List<String>
+                _bauvorhabenNames.update { projection }
+            },
+            onFailure = { e ->
+                Log.e(TAG, "fetchBauvorhabenNames: Could not fetch bauvorhabenNames.", e)
+                displayMsgToUser("Fehler: "+ (e.message ?: "Keine Fehler-Nachricht erhalten."))
             }
-
-            val doc = task.result
-            val projection = doc!!.get("projection_name") as List<String>
-            _bauvorhabenNames.update { projection }
-        }
-        Log.d(TAG, "fetchBauvorhabenNames: Fetched.")
+        )
     }
 
     fun selectBauvorhaben(bauvorhabenName: String) {
         // TODO: Perform as transaction. If failed, invalidate cache.
-        Log.d(TAG, "selectBauvorhaben: bauvorhabenName=$bauvorhabenName, Selecting...")
+        Log.d(TAG, "selectBauvorhaben: Selecting. bauvorhabenName=$bauvorhabenName")
 
         // Fetch bauvorhabenDto
         FirestoreRepo.getBauvorhabenByName(bauvorhabenName) { task ->
@@ -137,7 +120,7 @@ class MainViewModel(
                 // If 0 or 2+ bauvorhaben with same name exist, log error and return.
                 if (docs.size != 1) {
                     Log.e(TAG, "selectBauvorhaben: Found n=${docs.size} bauvorhaben with name $bauvorhabenName.")
-                    // TODO: propagate result to user (maybe message queue of snackbar)
+                    displayMsgToUser("Fehler beim Auswählen des Bauvorhabens.")
                     return@launch
                 }
 
@@ -151,6 +134,34 @@ class MainViewModel(
 
     suspend fun onOpenSelectBauvorhabenScreen() {
         if (bauvorhabenNames.first().isEmpty()) fetchBauvorhabenNames()
+    }
+
+    /////////////////////////////////////////////////////////////
+
+    // Create Eintrag
+    val eintragForm = EintragForm()
+
+    fun createEintrag(form: EintragForm, bauvorhabenName: String) {
+        Log.d(TAG, "createEintrag: Creating. form=$form, bauvorhabenName=$bauvorhabenName")
+
+        if (form.validate().not()) {
+            Log.d(TAG, "createEintrag: Validation failed. form=$form")
+            displayMsgToUser("Bitte fülle alle Pflichtfelder aus.")
+        }
+        Log.d(TAG, "createEintrag: Validation success. form=$form")
+
+        FirestoreRepo.createEintragDoc(form.toDto(), bauvorhabenName) { isSuccess ->
+            Log.d(TAG, "createEintrag: isSuccess=$isSuccess")
+            if (isSuccess.not()) {
+                Log.e(TAG, "createEintrag: Could not create eintrag.")
+                displayMsgToUser("Fehler beim Erstellen des Eintrags.")
+                return@createEintragDoc
+            }
+            Log.d(TAG, "createEintrag: Created. form=$form, ")
+            displayMsgToUser("Eintrag wurde erstellt.")
+
+            form.clearFields()
+        }
     }
 
     ///////////////////////////   SEARCH   //////////////////////////////////
@@ -198,10 +209,11 @@ class MainViewModel(
 
 class MainViewModelFactory(
     private val settingsRepo: SettingsRepo,
+    private val displayMsgToUser: (msg: String) -> Unit,
 ): ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST") // Justification: We know the type of the view model.
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return MainViewModel(settingsRepo) as T
+        return MainViewModel(settingsRepo, displayMsgToUser) as T
     }
 }

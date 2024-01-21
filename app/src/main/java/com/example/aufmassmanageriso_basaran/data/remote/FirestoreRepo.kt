@@ -2,6 +2,7 @@ package com.example.aufmassmanageriso_basaran.data.remote
 
 import android.util.Log
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.BauvorhabenDto
+import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.EintragDto
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
@@ -10,7 +11,6 @@ import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.MemoryCacheSettings
 import com.google.firebase.firestore.PersistentCacheSettings
 import com.google.firebase.firestore.QuerySnapshot
-import com.google.firebase.firestore.Transaction
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -57,41 +57,107 @@ object FirestoreRepo {
 
     /////////////////////////////////////////////////////////////
 
-    fun createBauvorhaben(dto: BauvorhabenDto, onComplete: (task: Task<Transaction>) -> Unit = {}) {
-        Log.i(TAG, "createBauvorhaben: dto=$dto, Creating...")
+    fun createBauvorhabenDoc(dto: BauvorhabenDto, onResult: (isSuccess: Boolean) -> Unit) {
+        Log.i(TAG, "createBauvorhaben: Creating. dto=$dto")
 
-        val name = dto.name
         val data = hashMapOf(
-            "name" to name,
+            "name" to dto.name,
             "aufmassNummer" to dto.aufmassNummer,
             "auftragsNummer" to dto.auftragsNummer,
             "notiz" to dto.notiz,
             "zeitstempel" to FieldValue.serverTimestamp(),
         )
 
-        val bauvorhabenCol = db.collection("bauvorhaben")
+        val bauvorhabenColl = db.collection("bauvorhaben")
         val metaBauvorhabenDoc = db.collection("meta").document("bauvorhaben")
 
-        db.runTransaction { transaction ->
+        db.runTransaction{ transaction ->
             // Create document with attribute `name:  dto.bauvorhaben`
-            transaction.set(bauvorhabenCol.document(), data)
+            transaction.set(bauvorhabenColl.document(), data)
             // Add this to the meta document via array union
             transaction.update(metaBauvorhabenDoc, "projection_name", FieldValue.arrayUnion(dto.name))
-        }.addOnCompleteListener(onComplete)
+        }.addOnCompleteListener { task ->
+            Log.d(TAG, "createBauvorhaben: Transaction complete. isSuccessful=${task.isSuccessful}")
+            onResult(task.isSuccessful)
+        }
     }
 
-    fun getMetaBauvorhabenDoc(onComplete: (task: Task<DocumentSnapshot>) -> Unit = {}) {
-        Log.d(TAG, "getMetaBauvorhabenDoc: Fetching...")
+    fun getMetaBauvorhabenDoc(onSuccess: (doc: DocumentSnapshot) -> Unit, onFailure: (e: Exception) -> Unit) {
+        Log.d(TAG, "getMetaBauvorhabenDoc: Fetching.")
         db.collection("meta").document("bauvorhaben").get()
-            .addOnCompleteListener(onComplete)
+            .addOnCompleteListener {
+                Log.d(TAG, "getMetaBauvorhabenDoc: Fetched.")
+            }
+            .addOnSuccessListener(onSuccess)
+            .addOnFailureListener(onFailure)
             .addOnCompleteListener (::updateIsSyncedWithServer)
     }
 
     fun getBauvorhabenByName(bauvorhabenName: String, onComplete: (task: Task<QuerySnapshot>) -> Unit = {}) {
-        Log.d(TAG, "getBauvorhabenByName: bauvorhabenName=$bauvorhabenName, Fetching...")
+        Log.d(TAG, "getBauvorhabenByName: Fetching. bauvorhabenName=$bauvorhabenName")
         db.collection("bauvorhaben").whereEqualTo("name", bauvorhabenName).get()
+            .addOnCompleteListener {
+                Log.d(TAG, "getBauvorhabenByName: Fetched.")
+            }
             .addOnCompleteListener(onComplete)
             .addOnCompleteListener(::updateIsSyncedWithServer)
+    }
+
+    /////////////////////////////////////////////////////////////
+
+    fun createEintragDoc(dto: EintragDto, bauvorhabenName: String, onResult: (isSuccess: Boolean) -> Unit) {
+        Log.i(TAG, "createEintrag: Creating. dto=$dto, bauvorhabenName=$bauvorhabenName")
+
+        val data = hashMapOf(
+            "bereich" to dto.bereich,
+            "durchmesser" to dto.durchmesser,
+            "isolierung" to dto.isolierung,
+            "gewerk" to dto.gewerk,
+            "meterListe" to dto.meterListe,
+            "meterSumme" to dto.meterSumme,
+            "bogen" to dto.bogen,
+            "stutzen" to dto.stutzen,
+            "ausschnitt" to dto.ausschnitt,
+            "passstueck" to dto.passstueck,
+            "endstelle" to dto.endstelle,
+            "halter" to dto.halter,
+            "flansch" to dto.flansch,
+            "ventil" to dto.ventil,
+            "schmutzfilter" to dto.schmutzfilter,
+            "dreiWegeVentil" to dto.dreiWegeVentil,
+            "notiz" to dto.notiz,
+            "zeitstempel" to FieldValue.serverTimestamp(),
+        )
+
+        // Get document with name = bauvorhabenName
+        val bauvorhabenColl = db.collection("bauvorhaben")
+        // Query for bauvorhabenDoc
+        bauvorhabenColl.whereEqualTo("name", bauvorhabenName).get()
+            // On failure, log error and return
+            .addOnFailureListener {
+                Log.e(TAG, "createEintragDoc: Could not fetch bauvorhabenDoc(s).", it)
+                onResult(false)
+            }
+            // On success, check if exactly one bauvorhabenDoc was found
+            // If not, log error and return.
+            // If so, add eintragDoc to subcollection "eintraege" of bauvorhabenDoc.
+            .addOnSuccessListener { snapshot ->
+                Log.d(TAG, "createEintragDoc: Fetched bauvorhabenDoc(s): doc count=${snapshot.documents.size}")
+                if (snapshot.documents.size != 1) {
+                    Log.e(TAG, "createEintragDoc: Found n=${snapshot.documents.size} bauvorhaben with name $bauvorhabenName.")
+                    onResult(false)
+                    return@addOnSuccessListener
+                }
+                val bauvorhabenDoc = snapshot.documents.first()
+                // Get subcollection "eintraege" of bauvorhabenDoc
+                val eintraegeColl = bauvorhabenDoc.reference.collection("eintraege")
+                // Create document of eintrag
+                eintraegeColl.document().set(data)
+                    .addOnCompleteListener { task ->
+                        onResult(task.isSuccessful)
+                    }
+            }
+
     }
 
     /////////////////////////////////////////////////////////////

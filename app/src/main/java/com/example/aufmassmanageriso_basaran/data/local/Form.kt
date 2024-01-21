@@ -1,5 +1,6 @@
 package com.example.aufmassmanageriso_basaran.data.local
 
+import android.util.Log
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import kotlinx.coroutines.flow.Flow
@@ -14,6 +15,13 @@ import kotlinx.coroutines.flow.update
  * Define the form fields as [TextFormField] properties of the class.
  */
 abstract class Form {
+
+    companion object {
+        /**
+         * Tag for logging.
+         */
+        private const val TAG = "Form"
+    }
 
     private val _fields = MutableStateFlow(listOf<FormField>())
 
@@ -114,6 +122,7 @@ abstract class Form {
      * It is recommended to call `super.validate()` for consistency.
      */
     open fun validate(): Boolean {
+        Log.d(TAG, "validate: Validating. fields=${_fields.value}")
         return _fields.value.all { it.validate() }
     }
 

@@ -1,6 +1,5 @@
 package com.example.aufmassmanageriso_basaran.ui.screens
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -21,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.aufmassmanageriso_basaran.data.local.BauvorhabenForm
@@ -34,11 +32,10 @@ import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTh
 @Composable
 fun CreateBauvorhabenScreen(
     form: BauvorhabenForm = BauvorhabenForm(),
-    createBauvorhaben: (BauvorhabenForm) -> List<String> = { emptyList() },
+    createBauvorhaben: (form: BauvorhabenForm) -> Unit = { },
     onAbort: () -> Unit = {}
 ) {
     val fields by form.fields.collectAsState()
-    val context = LocalContext.current
 
     Scaffold(
         contentWindowInsets = WindowInsets.ime
@@ -78,12 +75,7 @@ fun CreateBauvorhabenScreen(
 
                 // Create
                 OutlinedButton(
-                    onClick = {
-                        val responses = createBauvorhaben(form)
-                        responses.forEach { msg ->
-                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                        }
-                    }
+                    onClick = { createBauvorhaben(form) }
                 ) {
                     Text(text = "Erstellen")
                 }

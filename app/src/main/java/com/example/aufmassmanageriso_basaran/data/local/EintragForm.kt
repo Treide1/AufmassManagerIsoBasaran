@@ -2,12 +2,11 @@ package com.example.aufmassmanageriso_basaran.data.local
 
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import com.example.aufmassmanageriso_basaran.data.mapping.convertInputMeterListe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.mapLatest
-import java.math.BigDecimal
-import java.math.MathContext
 
 /**
  * Form class for a new standard entry (german: "Eintrag").
@@ -36,7 +35,7 @@ class EintragForm: Form() {
 
     // Required fields
     var bereich by addTextFormField(
-        "Bereich",
+        name = "Bereich",
         isRequired = true,
         isRetained = true,
         keyboardType = KeyboardType.Text,
@@ -45,7 +44,7 @@ class EintragForm: Form() {
     )
 
     var durchmesser by addTextFormField(
-        "Durchmesser (ø)",
+        name = "Durchmesser (ø)",
         isRequired = true,
         keyboardType = KeyboardType.Number,
         imeAction = ImeAction.Next,
@@ -54,7 +53,7 @@ class EintragForm: Form() {
     )
 
     var isolierung by addTextFormField(
-        "Isolierung",
+        name = "Isolierung",
         isRequired = true,
         keyboardType = KeyboardType.Text,
         imeAction = ImeAction.Next,
@@ -62,7 +61,7 @@ class EintragForm: Form() {
     )
 
     var gewerk by addTextFormField(
-        "Gewerk",
+        name = "Gewerk",
         isRequired = true,
         keyboardType = KeyboardType.Text,
         imeAction = ImeAction.Next,
@@ -73,20 +72,15 @@ class EintragForm: Form() {
     val meterListeFormField = addDecimalSummingFormField("Meter-Liste")
     var meterListe by meterListeFormField
 
+    @Suppress("unused") // Justify: Still visually added as form field
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val meterSumme by addDerivedFormField(
-    "Meter-Summe",
-        meterListeFormField._text
+        name = "Meter-Summe",
+        derivedText = meterListeFormField._text
             .debounce(450L)
             .mapLatest { activeInput ->
-                if (activeInput.isEmpty()) {
-                    return@mapLatest "0.0"
-                }
                 try {
-                    activeInput.split("+")
-                        // Summing and rounding down to two decimal places
-                        .sumOf { it.toDouble().times(100).toInt() }.div(100.0)
-                        .toString()
+                    convertInputMeterListe(activeInput).sum().toString()
                 } catch (e: Exception) {
                     "[Fehler in Summe]"
                 }
@@ -105,7 +99,7 @@ class EintragForm: Form() {
     var dreiWegeVentil by addIntFormField("Drei-Wege-Ventil")
 
     var notiz by addTextFormField(
-        "Notiz",
+        name = "Notiz",
         isRequired = false,
         keyboardType = KeyboardType.Text,
         imeAction = ImeAction.Done

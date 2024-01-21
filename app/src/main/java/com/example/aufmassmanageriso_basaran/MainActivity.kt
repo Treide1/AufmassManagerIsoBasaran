@@ -2,6 +2,7 @@ package com.example.aufmassmanageriso_basaran
 
 import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.datastore.preferences.preferencesDataStore
@@ -27,7 +28,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             AufmassManagerIsoBasaranTheme {
                 val viewModel = viewModel<MainViewModel>(
-                    factory = MainViewModelFactory(settingsRepo)
+                    factory = MainViewModelFactory(settingsRepo) { msg ->
+                        // Display message to user
+                        Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+                    }
                 )
                 val navController = rememberNavController()
                 AufmassManagerApp(viewModel, navController)

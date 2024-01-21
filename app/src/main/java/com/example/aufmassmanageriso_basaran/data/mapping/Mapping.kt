@@ -36,21 +36,22 @@ fun DocumentSnapshot.toDto(): BauvorhabenDto {
 }
 
 fun EintragForm.toDto() = EintragDto(
-    bereich = bereich ?: "[KeinBereich]",
+    bereich = bereich,
     durchmesser = durchmesser.toInt(),
     isolierung = isolierung,
     gewerk = gewerk,
-    meterListe = meterListe.map { it.toDouble() },
-    meterSumme = meterSumme.toDouble(),
-    bogen = bogen.toInt(),
-    stutzen = stutzen.toInt(),
-    ausschnitt = ausschnitt.toInt(),
-    passstueck = passstueck.toInt(),
-    endstelle = endstelle.toInt(),
-    halter = halter.toInt(),
-    flansch = flansch.toInt(),
-    ventil = ventil.toInt(),
-    schmutzfilter = schmutzfilter.toInt(),
-    dreiWegeVentil = dreiWegeVentil.toInt(),
+    // Blank entries as 0 or 0.0
+    meterListe = convertInputMeterListe(meterListe),
+    meterSumme = convertInputMeterListe(meterListe).sum(),
+    bogen = bogen.toIntBlankAsZero(),
+    stutzen = stutzen.toIntBlankAsZero(),
+    ausschnitt = ausschnitt.toIntBlankAsZero(),
+    passstueck = passstueck.toIntBlankAsZero(),
+    endstelle = endstelle.toIntBlankAsZero(),
+    halter = halter.toIntBlankAsZero(),
+    flansch = flansch.toIntBlankAsZero(),
+    ventil = ventil.toIntBlankAsZero(),
+    schmutzfilter = schmutzfilter.toIntBlankAsZero(),
+    dreiWegeVentil = dreiWegeVentil.toIntBlankAsZero(),
     notiz = notiz.ifBlank { null }
 )
