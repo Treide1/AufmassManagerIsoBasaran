@@ -4,8 +4,10 @@ package com.example.aufmassmanageriso_basaran.data.mapping
 
 import com.example.aufmassmanageriso_basaran.data.local.BauvorhabenForm
 import com.example.aufmassmanageriso_basaran.data.local.EintragForm
+import com.example.aufmassmanageriso_basaran.data.local.SpezialForm
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.BauvorhabenDto
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.EintragDto
+import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.SpezialDto
 import com.google.firebase.firestore.DocumentSnapshot
 
 fun BauvorhabenForm.toDto() = BauvorhabenDto(
@@ -53,5 +55,11 @@ fun EintragForm.toDto() = EintragDto(
     ventil = ventil.toIntBlankAsZero(),
     schmutzfilter = schmutzfilter.toIntBlankAsZero(),
     dreiWegeVentil = dreiWegeVentil.toIntBlankAsZero(),
+    notiz = notiz.ifBlank { null }
+)
+
+fun SpezialForm.toDto() = SpezialDto(
+    bereich = bereich,
+    daten = daten,
     notiz = notiz.ifBlank { null }
 )

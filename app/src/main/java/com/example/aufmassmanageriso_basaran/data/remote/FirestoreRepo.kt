@@ -3,6 +3,7 @@ package com.example.aufmassmanageriso_basaran.data.remote
 import android.util.Log
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.BauvorhabenDto
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.EintragDto
+import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.SpezialDto
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
@@ -106,7 +107,7 @@ object FirestoreRepo {
     /////////////////////////////////////////////////////////////
 
     fun createEintragDoc(dto: EintragDto, bauvorhabenName: String, onResult: (isSuccess: Boolean) -> Unit) {
-        Log.i(TAG, "createEintrag: Creating. dto=$dto, bauvorhabenName=$bauvorhabenName")
+        Log.i(TAG, "createEintragDoc: Creating. dto=$dto, bauvorhabenName=$bauvorhabenName")
 
         val data = hashMapOf(
             "bereich" to dto.bereich,
@@ -157,7 +158,48 @@ object FirestoreRepo {
                         onResult(task.isSuccessful)
                     }
             }
+    }
 
+    /////////////////////////////////////////////////////////////
+
+    fun createSpezialEintragDoc(dto: SpezialDto, bauvorhabenName: String, onResult: (isSuccess: Boolean) -> Unit) {
+        Log.i(TAG, "createSpezialEintragDoc: Creating. dto=$dto, bauvorhabenName=$bauvorhabenName")
+
+        val data = hashMapOf(
+            "bereich" to dto.bereich,
+            "daten" to dto.daten,
+            "notiz" to dto.notiz,
+            "zeitstempel" to FieldValue.serverTimestamp(),
+        )
+
+        // Get document with name = bauvorhabenName
+        val bauvorhabenColl = db.collection("bauvorhaben")
+        // Query for bauvorhabenDoc
+        bauvorhabenColl.whereEqualTo("name", bauvorhabenName).get()
+            // On failure, log error and return
+            .addOnFailureListener {
+                Log.e(TAG, "createSpezialEintragDoc: Could not fetch bauvorhabenDoc(s).", it)
+                onResult(false)
+            }
+            // On success, check if exactly one bauvorhabenDoc was found
+            // If not, log error and return.
+            // If so, add eintragDoc to subcollection "spezialEintraege" of bauvorhabenDoc.
+            .addOnSuccessListener { snapshot ->
+                Log.d(TAG, "createSpezialEintragDoc: Fetched bauvorhabenDoc(s): doc count=${snapshot.documents.size}")
+                if (snapshot.documents.size != 1) {
+                    Log.e(TAG, "createSpezialEintragDoc: Found n=${snapshot.documents.size} bauvorhaben with name $bauvorhabenName.")
+                    onResult(false)
+                    return@addOnSuccessListener
+                }
+                val bauvorhabenDoc = snapshot.documents.first()
+                // Get subcollection "spezialEintraege" of bauvorhabenDoc
+                val spezialColl = bauvorhabenDoc.reference.collection("spezialEintraege")
+                // Create document of eintrag
+                spezialColl.document().set(data)
+                    .addOnCompleteListener { task ->
+                        onResult(task.isSuccessful)
+                    }
+            }
     }
 
     /////////////////////////////////////////////////////////////

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.aufmassmanageriso_basaran.data.local.BauvorhabenForm
 import com.example.aufmassmanageriso_basaran.data.local.EintragForm
+import com.example.aufmassmanageriso_basaran.data.local.SpezialForm
 import com.example.aufmassmanageriso_basaran.data.mapping.toDto
 import com.example.aufmassmanageriso_basaran.data.remote.FirestoreRepo
 import com.example.aufmassmanageriso_basaran.data.settings.SettingsRepo
@@ -159,6 +160,34 @@ class MainViewModel(
             }
             Log.d(TAG, "createEintrag: Created. form=$form, ")
             displayMsgToUser("Eintrag wurde erstellt.")
+
+            form.clearFields()
+        }
+    }
+
+    /////////////////////////////////////////////////////////////
+
+    // Create Spezial (a.k.a. SpezialEintrag)
+    val spezialForm = SpezialForm()
+
+    fun createSpezial(form: SpezialForm, bauvorhabenName: String) {
+        Log.d(TAG, "createSpezial: Creating. form=$form, bauvorhabenName=$bauvorhabenName")
+
+        if (form.validate().not()) {
+            Log.d(TAG, "createSpezial: Validation failed. form=$form")
+            displayMsgToUser("Bitte fülle alle Pflichtfelder aus.")
+        }
+        Log.d(TAG, "createSpezial: Validation success. form=$form")
+
+        FirestoreRepo.createSpezialEintragDoc(form.toDto(), bauvorhabenName) { isSuccess ->
+            Log.d(TAG, "createSpezial: isSuccess=$isSuccess")
+            if (isSuccess.not()) {
+                Log.e(TAG, "createSpezial: Could not create spezialEintrag.")
+                displayMsgToUser("Fehler beim Erstellen des Spezial-Eintrags.")
+                return@createSpezialEintragDoc
+            }
+            Log.d(TAG, "createSpezial: Created. form=$form, ")
+            displayMsgToUser("Spezial-Eintrag wurde erstellt.")
 
             form.clearFields()
         }

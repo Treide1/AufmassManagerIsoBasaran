@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.AddBox
 import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LibraryAdd
+import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material.icons.filled.SyncProblem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +22,7 @@ import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationItem
 import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationWrapper
 import com.example.aufmassmanageriso_basaran.ui.screens.CreateBauvorhabenScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.CreateEintragScreen
+import com.example.aufmassmanageriso_basaran.ui.screens.CreateSpezialScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.SelectBauvorhabenScreen
 
 /**
@@ -105,6 +107,33 @@ fun AufmassManagerApp(
                             onAbort = {
                                 // Clear form fields and navigate back
                                 model.eintragForm.clearFields()
+                                navHostController.navigate(home)
+                            }
+                        )
+                    }
+
+                }
+            ),
+            NavigationItem(
+                title = "Spezial-Eintrag hinzufügen",
+                icon = Icons.Filled.NoteAdd,
+                route = "add_special_entry",
+                screen = {
+                    val selectedBauvorhaben by model.selectedBauvorhaben.collectAsState()
+
+                    if (selectedBauvorhaben == null) {
+                        // Navigate back if no bauvorhaben is selected
+                        navHostController.navigate(home)
+                        Toast.makeText(LocalContext.current, "Kein Bauvorhaben ausgewählt", Toast.LENGTH_SHORT).show()
+                    } else {
+                        CreateSpezialScreen(
+                            coroutineContext = model.viewModelScope.coroutineContext,
+                            form = model.spezialForm,
+                            bauvorhabenName = selectedBauvorhaben!!.name,
+                            createSpezial = model::createSpezial,
+                            onAbort = {
+                                // Clear form fields and navigate back
+                                model.spezialForm.clearFields()
                                 navHostController.navigate(home)
                             }
                         )
