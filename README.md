@@ -11,11 +11,15 @@ Auftraggeber: Nicolas Lehmann
 ## Verwendung
 
 Es gibt eine Erklärung auf der "Informationen"-Ansicht, dem Startbildschirm.
-Dieser erklärt die Verwendung der App.
+Dieser erklärt die Verwendung der App und präsentiert wichtige Statusmeldungen.
 
 ### Ansichten (Screens)
 
+Immer: Screen-Drawer + Name des Screens + Sync-Status 
+
 * Informationen
+  * Erklärung der App
+  * Datum des letzten Synchronisations-Vorgangs
 * Bauvorhaben hinzufügen
 * Bauvorhaben auswählen
 * Aufmaß hinzufügen
@@ -85,7 +89,8 @@ Aufbau der Datenbank in Firestore:
   * `zeitstempel`: timestamp (automatisch generiert)
 
 `SpezialEintrag` = Dokument (Model)
-  * `beschreibung`: string
+  * `bereich`: string
+  * `daten`: string
   * `notiz`: string
   * `zeitstempel`: timestamp (automatisch generiert)
 
