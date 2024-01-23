@@ -23,6 +23,7 @@ import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationWrapper
 import com.example.aufmassmanageriso_basaran.ui.screens.CreateBauvorhabenScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.CreateEintragScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.CreateSpezialScreen
+import com.example.aufmassmanageriso_basaran.ui.screens.HomeScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.SelectBauvorhabenScreen
 
 /**
@@ -45,7 +46,9 @@ fun AufmassManagerApp(
                 title = "Informationen",
                 icon = Icons.Filled.Info,
                 route = home,
-                screen = { Text(text = "Allgemeine Informationen über die App +\n aktuelle Informationen (z.B. Probleme)") }
+                screen = {
+                    HomeScreen()
+                }
             ),
             NavigationItem(
                 title = "Bauvorhaben hinzufügen",
