@@ -85,7 +85,8 @@ Aufbau der Datenbank in Firestore:
   * `zeitstempel`: timestamp (automatisch generiert)
 
 `SpezialEintrag` = Dokument (Model)
-  * `beschreibung`: string
+  * `bereich`: string
+  * `daten`: string
   * `notiz`: string
   * `zeitstempel`: timestamp (automatisch generiert)
 
