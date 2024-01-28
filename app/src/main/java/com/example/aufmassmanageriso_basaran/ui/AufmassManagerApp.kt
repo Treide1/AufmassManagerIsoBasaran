@@ -3,9 +3,9 @@ package com.example.aufmassmanageriso_basaran.ui
 import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddBox
-import androidx.compose.material.icons.filled.Construction
+import androidx.compose.material.icons.filled.Domain
+import androidx.compose.material.icons.filled.DomainAdd
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LibraryAdd
 import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material.icons.filled.SyncProblem
 import androidx.compose.runtime.Composable
@@ -37,6 +37,7 @@ fun AufmassManagerApp(
     navHostController: NavHostController
 ) {
     val isSynced by model.isSyncedWithServer.collectAsState()
+    val selectedBauvorhaben by model.selectedBauvorhaben.collectAsState()
     val home = "home"
 
     NavigationWrapper(
@@ -51,7 +52,7 @@ fun AufmassManagerApp(
             ),
             NavigationItem(
                 title = "Bauvorhaben hinzufügen",
-                icon = Icons.Filled.LibraryAdd,
+                icon = Icons.Filled.DomainAdd,
                 route = "bauvorhaben_add",
                 screen = {
                     CreateBauvorhabenScreen(
@@ -67,14 +68,12 @@ fun AufmassManagerApp(
             ),
             NavigationItem(
                 title = "Bauvorhaben auswählen",
-                icon = Icons.Filled.Construction,
+                icon = Icons.Filled.Domain,
                 route = "bauvorhaben_select",
                 screen = {
                     val searchText by model.searchText.collectAsState()
                     val searchResults by model.searchResults.collectAsState()
                     val isSearching by model.isSearching.collectAsState()
-
-                    val selectedBauvorhaben by model.selectedBauvorhaben.collectAsState()
 
                     // Fetch data when opening screen
                     LaunchedEffect(Unit) {
@@ -96,8 +95,6 @@ fun AufmassManagerApp(
                 icon = Icons.Filled.AddBox,
                 route = "add_entry",
                 screen = {
-                    val selectedBauvorhaben by model.selectedBauvorhaben.collectAsState()
-
                     if (selectedBauvorhaben == null) {
                         // Navigate back if no bauvorhaben is selected
                         navHostController.navigate(home)
@@ -123,8 +120,6 @@ fun AufmassManagerApp(
                 icon = Icons.Filled.NoteAdd,
                 route = "add_special_entry",
                 screen = {
-                    val selectedBauvorhaben by model.selectedBauvorhaben.collectAsState()
-
                     if (selectedBauvorhaben == null) {
                         // Navigate back if no bauvorhaben is selected
                         navHostController.navigate(home)
@@ -133,7 +128,7 @@ fun AufmassManagerApp(
                         CreateSpezialScreen(
                             coroutineContext = model.viewModelScope.coroutineContext,
                             form = model.spezialForm,
-                            bauvorhabenName = selectedBauvorhaben!!.name,
+                            bauvorhabenDto = selectedBauvorhaben!!,
                             createSpezial = model::createSpezial,
                             onAbort = {
                                 // Clear form fields and navigate back
