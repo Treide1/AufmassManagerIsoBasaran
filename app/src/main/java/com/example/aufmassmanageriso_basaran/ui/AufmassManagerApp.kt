@@ -8,7 +8,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LibraryAdd
 import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material.icons.filled.SyncProblem
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,7 +22,7 @@ import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationWrapper
 import com.example.aufmassmanageriso_basaran.ui.screens.CreateBauvorhabenScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.CreateEintragScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.CreateSpezialScreen
-import com.example.aufmassmanageriso_basaran.ui.screens.HomeScreen
+import com.example.aufmassmanageriso_basaran.ui.screens.InformationenScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.SelectBauvorhabenScreen
 
 /**
@@ -47,22 +46,24 @@ fun AufmassManagerApp(
                 icon = Icons.Filled.Info,
                 route = home,
                 screen = {
-                    HomeScreen()
+                    InformationenScreen()
                 }
             ),
             NavigationItem(
                 title = "Bauvorhaben hinzufügen",
                 icon = Icons.Filled.LibraryAdd,
                 route = "bauvorhaben_add",
-                screen = { CreateBauvorhabenScreen(
-                    form = model.bauvorhabenForm,
-                    createBauvorhaben = model::createBauvorhaben,
-                    onAbort = {
-                        // Clear form fields and navigate back
-                        model.bauvorhabenForm.clearFields()
-                        navHostController.navigate(home)
-                    }
-                ) }
+                screen = {
+                    CreateBauvorhabenScreen(
+                        form = model.bauvorhabenForm,
+                        createBauvorhaben = model::createBauvorhaben,
+                        onAbort = {
+                            // Clear form fields and navigate back
+                            model.bauvorhabenForm.clearFields()
+                            navHostController.navigate(home)
+                        }
+                    )
+                }
             ),
             NavigationItem(
                 title = "Bauvorhaben auswählen",
