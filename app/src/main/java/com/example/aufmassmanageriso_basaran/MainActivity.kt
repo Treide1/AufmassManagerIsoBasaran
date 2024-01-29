@@ -2,6 +2,7 @@ package com.example.aufmassmanageriso_basaran
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.net.ConnectivityManager.NetworkCallback
 import android.net.Network
 import android.os.Bundle
 import android.util.Log
@@ -28,28 +29,28 @@ class MainActivity : ComponentActivity() {
 
     val TAG = "MainActivity"
 
+    private val networkCallback: NetworkCallback = object : NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            Log.e(TAG, "NetworkCallback: The default network is now: $network")
+        }
+
+        override fun onLost(network: Network) {
+            Log.e(
+                TAG,
+                "NetworkCallback: The application no longer has a default network. The last default network was $network"
+            )
+        }
+
+        override fun onUnavailable() {
+            Log.e(TAG, "NetworkCallback: The application no longer has a default network.")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val connectivityManager = getSystemService(ConnectivityManager::class.java)
-        connectivityManager.registerDefaultNetworkCallback(object :
-            ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) {
-                Log.e(TAG, "NetworkCallback: The default network is now: $network")
-            }
-
-            override fun onLost(network: Network) {
-                Log.e(
-                    TAG,
-                    "NetworkCallback: The application no longer has a default network. The last default network was $network"
-                )
-            }
-
-            override fun onUnavailable() {
-                Log.e(TAG, "NetworkCallback: The application no longer has a default network.")
-            }
-        })
+        connectivityManager.registerDefaultNetworkCallback(networkCallback)
 
         FirestoreRepo.startConnectionListener()
 
@@ -70,6 +71,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         FirestoreRepo.stopConnectionListener()
+
+        val connectivityManager = getSystemService(ConnectivityManager::class.java)
+        connectivityManager.unregisterNetworkCallback(networkCallback)
+
         super.onDestroy()
     }
 }

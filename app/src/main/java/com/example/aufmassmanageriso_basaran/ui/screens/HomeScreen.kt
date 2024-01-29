@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun InformationenScreen() {
 
+    // TODO: Clean up text
     Column(
         modifier = Modifier
             .fillMaxSize()
