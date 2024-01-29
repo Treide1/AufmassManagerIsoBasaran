@@ -9,7 +9,9 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.MemoryCacheSettings
+import com.google.firebase.firestore.MetadataChanges
 import com.google.firebase.firestore.PersistentCacheSettings
 import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,6 +58,30 @@ object FirestoreRepo {
      */
     val isSyncedWithServer = _isSyncedWithServer.asStateFlow()
 
+    private var listener: ListenerRegistration? = null
+
+    fun startConnectionListener() {
+        Log.d(TAG, "startConnectionListener: Starting.")
+        listener = db.collection("meta").document("fetch_me")
+            .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
+                if (e != null) {
+                    Log.w(TAG, "checkSyncedWithServer: Listen failed.", e)
+                    return@addSnapshotListener
+                }
+                // If snapshot is not null and isFromCache is true, then the data is local.
+                val isFromCache = snapshot?.metadata?.isFromCache ?: false
+                val source = if (isFromCache) "Local" else "Server"
+
+                Log.d(TAG, "checkSyncedWithServer: source=$source")
+                _isSyncedWithServer.update { isFromCache.not() }
+            }
+    }
+
+    fun stopConnectionListener() {
+        Log.d(TAG, "stopConnectionListener: Stopping.")
+        listener?.remove()
+    }
+
     /////////////////////////////////////////////////////////////
 
     fun createBauvorhabenDoc(dto: BauvorhabenDto, onResult: (isSuccess: Boolean) -> Unit) {
@@ -91,23 +117,21 @@ object FirestoreRepo {
             }
             .addOnSuccessListener(onSuccess)
             .addOnFailureListener(onFailure)
-            .addOnCompleteListener (::updateIsSyncedWithServer)
     }
 
     fun getBauvorhabenByName(bauvorhabenName: String, onComplete: (task: Task<QuerySnapshot>) -> Unit = {}) {
-        Log.d(TAG, "getBauvorhabenByName: Fetching. bauvorhabenName=$bauvorhabenName")
+        Log.d(TAG, "getBauvorhabenByName: Fetching by bauvorhabenName=$bauvorhabenName.")
         db.collection("bauvorhaben").whereEqualTo("name", bauvorhabenName).get()
             .addOnCompleteListener {
                 Log.d(TAG, "getBauvorhabenByName: Fetched.")
             }
             .addOnCompleteListener(onComplete)
-            .addOnCompleteListener(::updateIsSyncedWithServer)
     }
 
     /////////////////////////////////////////////////////////////
 
-    fun createEintragDoc(dto: EintragDto, bauvorhabenName: String, onResult: (isSuccess: Boolean) -> Unit) {
-        Log.i(TAG, "createEintragDoc: Creating. dto=$dto, bauvorhabenName=$bauvorhabenName")
+    fun createEintragDoc(dto: EintragDto, docId: String, onResult: (isSuccess: Boolean) -> Unit) {
+        Log.i(TAG, "createEintragDoc: Creating. dto=$dto, docId=$docId")
 
         val data = hashMapOf(
             "bereich" to dto.bereich,
@@ -131,39 +155,21 @@ object FirestoreRepo {
         )
 
         // Get document with name = bauvorhabenName
-        val bauvorhabenColl = db.collection("bauvorhaben")
-        // Query for bauvorhabenDoc
-        bauvorhabenColl.whereEqualTo("name", bauvorhabenName).get()
-            // On failure, log error and return
-            .addOnFailureListener {
-                Log.e(TAG, "createEintragDoc: Could not fetch bauvorhabenDoc(s).", it)
-                onResult(false)
-            }
-            // On success, check if exactly one bauvorhabenDoc was found
-            // If not, log error and return.
-            // If so, add eintragDoc to subcollection "eintraege" of bauvorhabenDoc.
-            .addOnSuccessListener { snapshot ->
-                Log.d(TAG, "createEintragDoc: Fetched bauvorhabenDoc(s): doc count=${snapshot.documents.size}")
-                if (snapshot.documents.size != 1) {
-                    Log.e(TAG, "createEintragDoc: Found n=${snapshot.documents.size} bauvorhaben with name $bauvorhabenName.")
-                    onResult(false)
-                    return@addOnSuccessListener
-                }
-                val bauvorhabenDoc = snapshot.documents.first()
-                // Get subcollection "eintraege" of bauvorhabenDoc
-                val eintraegeColl = bauvorhabenDoc.reference.collection("eintraege")
-                // Create document of eintrag
-                eintraegeColl.document().set(data)
-                    .addOnCompleteListener { task ->
-                        onResult(task.isSuccessful)
-                    }
+        val bauvorhabenDoc = db.collection("bauvorhaben").document(docId)
+        // Get subcollection "eintraege" of bauvorhabenDoc
+        val eintraegeColl = bauvorhabenDoc.collection("eintraege")
+        // Create document of eintrag
+        // TODO: Complete gracefully when offline
+        eintraegeColl.document().set(data)
+            .addOnCompleteListener { task ->
+                onResult(task.isSuccessful)
             }
     }
 
     /////////////////////////////////////////////////////////////
 
-    fun createSpezialEintragDoc(dto: SpezialDto, bauvorhabenName: String, onResult: (isSuccess: Boolean) -> Unit) {
-        Log.i(TAG, "createSpezialEintragDoc: Creating. dto=$dto, bauvorhabenName=$bauvorhabenName")
+    fun createSpezialEintragDoc(dto: SpezialDto, docId: String, onResult: (isSuccess: Boolean) -> Unit) {
+        Log.i(TAG, "createSpezialEintragDoc: Creating. dto=$dto, docId=$docId")
 
         val data = hashMapOf(
             "bereich" to dto.bereich,
@@ -173,52 +179,14 @@ object FirestoreRepo {
         )
 
         // Get document with name = bauvorhabenName
-        val bauvorhabenColl = db.collection("bauvorhaben")
-        // Query for bauvorhabenDoc
-        bauvorhabenColl.whereEqualTo("name", bauvorhabenName).get()
-            // On failure, log error and return
-            .addOnFailureListener {
-                Log.e(TAG, "createSpezialEintragDoc: Could not fetch bauvorhabenDoc(s).", it)
-                onResult(false)
+        val bauvorhabenDoc = db.collection("bauvorhaben").document(docId)
+        // Get subcollection "spezialEintraege" of bauvorhabenDoc
+        val spezialColl = bauvorhabenDoc.collection("spezialEintraege")
+        // Create document of eintrag
+        // TODO: Complete gracefully when offline
+        spezialColl.document().set(data)
+            .addOnCompleteListener { task ->
+                onResult(task.isSuccessful)
             }
-            // On success, check if exactly one bauvorhabenDoc was found
-            // If not, log error and return.
-            // If so, add eintragDoc to subcollection "spezialEintraege" of bauvorhabenDoc.
-            .addOnSuccessListener { snapshot ->
-                Log.d(TAG, "createSpezialEintragDoc: Fetched bauvorhabenDoc(s): doc count=${snapshot.documents.size}")
-                if (snapshot.documents.size != 1) {
-                    Log.e(TAG, "createSpezialEintragDoc: Found n=${snapshot.documents.size} bauvorhaben with name $bauvorhabenName.")
-                    onResult(false)
-                    return@addOnSuccessListener
-                }
-                val bauvorhabenDoc = snapshot.documents.first()
-                // Get subcollection "spezialEintraege" of bauvorhabenDoc
-                val spezialColl = bauvorhabenDoc.reference.collection("spezialEintraege")
-                // Create document of eintrag
-                spezialColl.document().set(data)
-                    .addOnCompleteListener { task ->
-                        onResult(task.isSuccessful)
-                    }
-            }
-    }
-
-    /////////////////////////////////////////////////////////////
-
-    /**
-     * Update the [isSyncedWithServer] state flow based on the result of the given [task].
-     */
-    private fun <T> updateIsSyncedWithServer(task: Task<T>) {
-        Log.d(TAG, "updateIsSyncedWithServer: Invoked with task.isSuccessful=${task.isSuccessful}")
-        try {
-            when (val result = task.result) {
-                is DocumentSnapshot -> _isSyncedWithServer.update { result.metadata.isFromCache.not() }
-                is QuerySnapshot -> _isSyncedWithServer.update { result.metadata.isFromCache.not() }
-                else -> throw Exception("Task result is neither DocumentSnapshot nor QuerySnapshot.")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "updateIsSyncedWithServer: ", e)
-            Log.w(TAG, "updateIsSyncedWithServer: Task failed. Assuming not synced with server.")
-            _isSyncedWithServer.update { false }
-        }
     }
 }

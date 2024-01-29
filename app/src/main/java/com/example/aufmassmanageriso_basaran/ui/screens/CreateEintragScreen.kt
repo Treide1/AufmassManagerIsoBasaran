@@ -45,7 +45,7 @@ fun CreateEintragScreen(
     form: EintragForm,
     bauvorhabenName: String,
     coroutineContext: CoroutineContext = CoroutineScope(Dispatchers.Default).coroutineContext,
-    createEintrag: (form: EintragForm, bauvorhabenName: String) -> Unit = { _, _ -> },
+    createEintrag: () -> Unit = {},
     onAbort: () -> Unit = {}
 ) {
     val fields by form.fields.collectAsState()
@@ -64,7 +64,9 @@ fun CreateEintragScreen(
         ) {
             //////////////////////////
             Box(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp),
                 contentAlignment = Alignment.TopStart
             ) {
                 Text(
@@ -117,7 +119,7 @@ fun CreateEintragScreen(
 
                 // Create
                 OutlinedButton(
-                    onClick = { createEintrag(form, bauvorhabenName) }
+                    onClick = createEintrag
                 ) {
                     Text(text = "Erstellen")
                 }

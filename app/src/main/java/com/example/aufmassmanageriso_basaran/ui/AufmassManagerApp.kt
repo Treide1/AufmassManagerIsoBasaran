@@ -128,7 +128,7 @@ fun AufmassManagerApp(
                         CreateSpezialScreen(
                             coroutineContext = model.viewModelScope.coroutineContext,
                             form = model.spezialForm,
-                            bauvorhabenDto = selectedBauvorhaben!!,
+                            bauvorhabenName = selectedBauvorhaben!!.name,
                             createSpezial = model::createSpezial,
                             onAbort = {
                                 // Clear form fields and navigate back

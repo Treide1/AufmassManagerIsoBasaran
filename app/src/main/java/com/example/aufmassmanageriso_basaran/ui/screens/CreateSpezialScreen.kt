@@ -30,7 +30,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.aufmassmanageriso_basaran.data.local.DerivedFormField
-import com.example.aufmassmanageriso_basaran.data.local.EintragForm
 import com.example.aufmassmanageriso_basaran.data.local.SpezialForm
 import com.example.aufmassmanageriso_basaran.data.local.TextFormField
 import com.example.aufmassmanageriso_basaran.ui.components.ButtonRow
@@ -46,7 +45,7 @@ fun CreateSpezialScreen(
     form: SpezialForm,
     bauvorhabenName: String,
     coroutineContext: CoroutineContext = CoroutineScope(Dispatchers.Default).coroutineContext,
-    createSpezial: (form: SpezialForm, bauvorhabenName: String) -> Unit = { _, _ -> },
+    createSpezial: () -> Unit = { },
     onAbort: () -> Unit = {}
 ) {
     val fields by form.fields.collectAsState()
@@ -118,7 +117,7 @@ fun CreateSpezialScreen(
 
                 // Create
                 OutlinedButton(
-                    onClick = { createSpezial(form, bauvorhabenName) }
+                    onClick = createSpezial
                 ) {
                     Text(text = "Erstellen")
                 }
