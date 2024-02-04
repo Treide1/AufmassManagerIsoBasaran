@@ -1,6 +1,5 @@
 package com.example.aufmassmanageriso_basaran.ui.screens
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,31 +15,24 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.aufmassmanageriso_basaran.data.local.DerivedFormField
-import com.example.aufmassmanageriso_basaran.data.local.SpezialForm
+import com.example.aufmassmanageriso_basaran.data.local.BauvorhabenForm
 import com.example.aufmassmanageriso_basaran.data.local.TextFormField
 import com.example.aufmassmanageriso_basaran.ui.components.ButtonRow
-import com.example.aufmassmanageriso_basaran.ui.components.DerivedTextLabel
 import com.example.aufmassmanageriso_basaran.ui.components.FormTextInput
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
 
 @Composable
-fun CreateSpezialScreen(
-    form: SpezialForm,
-    bauvorhabenName: String,
-    createSpezial: () -> Unit = {},
+fun BauvorhabenHinzufuegenScreen(
+    form: BauvorhabenForm = BauvorhabenForm(),
+    createBauvorhaben: (form: BauvorhabenForm) -> Unit = { },
     onAbort: () -> Unit = {}
 ) {
     val fields by form.fields.collectAsState()
 
+    // Input mask
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -49,35 +41,16 @@ fun CreateSpezialScreen(
             .verticalScroll(rememberScrollState())
     ) {
         //////////////////////////
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 32.dp),
-            contentAlignment = Alignment.TopStart
-        ) {
-            Text(
-                text = buildAnnotatedString {
-                    withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline)) {
-                        append("Bauvorhaben:")
-                    }
-                    append(" $bauvorhabenName")
-                },
-            )
-
-        }
-        //////////////////////////
         // Populating the form fields
         fields.forEach { field ->
             when (field) {
                 is TextFormField -> {
-                    FormTextInput(textFormField = field)
-                }
-                is DerivedFormField -> {
-                    DerivedTextLabel(derivedFormField = field)
+                    FormTextInput(field)
                 }
             }
         }
         //////////////////////////
+        // Buttons: Abort, Create
         ButtonRow {
             // Cancel
             OutlinedButton(
@@ -93,20 +66,19 @@ fun CreateSpezialScreen(
 
             // Create
             OutlinedButton(
-                onClick = createSpezial
+                onClick = { createBauvorhaben(form) }
             ) {
                 Text(text = "Erstellen")
             }
         }
         //////////////////////////
     }
-
 }
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
-fun SpezialScreenPreview() {
+fun SettingsScreenPreview() {
     AufmassManagerIsoBasaranTheme {
-        CreateSpezialScreen(SpezialForm(), "Bauvorhaben 1")
+        BauvorhabenHinzufuegenScreen()
     }
 }

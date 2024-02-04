@@ -122,6 +122,11 @@ class MainViewModel(
             }
             return
         }
+        if (isSyncedWithServer.value.not()) {
+            Log.e(TAG, "selectBauvorhaben: Not synced with server.")
+            displayMsgToUser("Fehler: Auswahl kann nur mit Internetverbindung erfolgen.")
+            return
+        }
 
         // Fetch bauvorhabenDto
         FirestoreRepo.getBauvorhabenByName(bauvorhabenName) { task ->
@@ -130,7 +135,7 @@ class MainViewModel(
                 val docs = task.result.documents
                 // If 0 or 2+ bauvorhaben with same name exist, log error and return.
                 if (docs.size != 1) {
-                    Log.e(TAG, "selectBauvorhaben: Found n=${docs.size} bauvorhaben docs with name $bauvorhabenName.")
+                    Log.e(TAG, "selectBauvorhaben: Found n=${docs.size} bauvorhaben docs with name '$bauvorhabenName'.")
                     displayMsgToUser("Fehler beim Auswählen des Bauvorhabens.")
                     return@launch
                 }

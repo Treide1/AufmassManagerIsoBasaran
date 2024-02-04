@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -25,22 +24,19 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.aufmassmanageriso_basaran.data.local.DecimalSummingField
 import com.example.aufmassmanageriso_basaran.data.local.DerivedFormField
-import com.example.aufmassmanageriso_basaran.data.local.EintragForm
+import com.example.aufmassmanageriso_basaran.data.local.SpezialForm
 import com.example.aufmassmanageriso_basaran.data.local.TextFormField
 import com.example.aufmassmanageriso_basaran.ui.components.ButtonRow
-import com.example.aufmassmanageriso_basaran.ui.components.DecimalSummingInput
 import com.example.aufmassmanageriso_basaran.ui.components.DerivedTextLabel
 import com.example.aufmassmanageriso_basaran.ui.components.FormTextInput
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateEintragScreen(
-    form: EintragForm,
+fun SpezialHinzufuegenScreen(
+    form: SpezialForm,
     bauvorhabenName: String,
-    createEintrag: () -> Unit = {},
+    createSpezial: () -> Unit = {},
     onAbort: () -> Unit = {}
 ) {
     val fields by form.fields.collectAsState()
@@ -54,7 +50,9 @@ fun CreateEintragScreen(
     ) {
         //////////////////////////
         Box(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 32.dp),
             contentAlignment = Alignment.TopStart
         ) {
             Text(
@@ -77,9 +75,6 @@ fun CreateEintragScreen(
                 is DerivedFormField -> {
                     DerivedTextLabel(derivedFormField = field)
                 }
-                is DecimalSummingField -> {
-                    DecimalSummingInput(field = field)
-                }
             }
         }
         //////////////////////////
@@ -98,19 +93,20 @@ fun CreateEintragScreen(
 
             // Create
             OutlinedButton(
-                onClick = createEintrag
+                onClick = createSpezial
             ) {
                 Text(text = "Erstellen")
             }
         }
         //////////////////////////
     }
+
 }
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
-fun AddEntryScreenPreview() {
+fun SpezialScreenPreview() {
     AufmassManagerIsoBasaranTheme {
-        CreateEintragScreen(EintragForm(), "Bauvorhaben 1")
+        SpezialHinzufuegenScreen(SpezialForm(), "Bauvorhaben 1")
     }
 }

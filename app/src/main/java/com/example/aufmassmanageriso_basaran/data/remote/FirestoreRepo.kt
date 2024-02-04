@@ -14,9 +14,11 @@ import com.google.firebase.firestore.MemoryCacheSettings
 import com.google.firebase.firestore.MetadataChanges
 import com.google.firebase.firestore.PersistentCacheSettings
 import com.google.firebase.firestore.QuerySnapshot
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.runBlocking
 
 
 object FirestoreRepo {
@@ -27,12 +29,15 @@ object FirestoreRepo {
     private const val TAG = "FirestoreRepo"
 
     /**
+     * Delay for offline write to give the illusion work being done
+     */
+    private const val OFFLINE_WRITE_DELAY_MILLIS = 300L
+
+    /**
      * Firebase Firestore instance.
      */
     private val db: FirebaseFirestore by lazy {
-        FirebaseFirestore.getInstance().also {
-           it.configure()
-        }
+        FirebaseFirestore.getInstance().apply { configure() }
     }
 
     /**
@@ -82,6 +87,12 @@ object FirestoreRepo {
         listener?.remove()
     }
 
+    private fun illusionOfWorkDelay() {
+        runBlocking {
+            delay(OFFLINE_WRITE_DELAY_MILLIS)
+        }
+    }
+
     /////////////////////////////////////////////////////////////
 
     fun createBauvorhabenDoc(dto: BauvorhabenDto, onResult: (isSuccess: Boolean) -> Unit) {
@@ -98,15 +109,18 @@ object FirestoreRepo {
         val bauvorhabenColl = db.collection("bauvorhaben")
         val metaBauvorhabenDoc = db.collection("meta").document("bauvorhaben")
 
-        db.runTransaction{ transaction ->
+        db.runTransaction { transaction ->
             // Create document with attribute `name:  dto.bauvorhaben`
             transaction.set(bauvorhabenColl.document(), data)
             // Add this to the meta document via array union
             transaction.update(metaBauvorhabenDoc, "projection_name", FieldValue.arrayUnion(dto.name))
         }.addOnCompleteListener { task ->
             Log.d(TAG, "createBauvorhaben: Transaction complete. isSuccessful=${task.isSuccessful}")
-            onResult(task.isSuccessful)
         }
+
+        // Give the illusion of work being done. Then call onResult.
+        illusionOfWorkDelay()
+        onResult(true)
     }
 
     fun getMetaBauvorhabenDoc(onSuccess: (doc: DocumentSnapshot) -> Unit, onFailure: (e: Exception) -> Unit) {
@@ -120,7 +134,7 @@ object FirestoreRepo {
     }
 
     fun getBauvorhabenByName(bauvorhabenName: String, onComplete: (task: Task<QuerySnapshot>) -> Unit = {}) {
-        Log.d(TAG, "getBauvorhabenByName: Fetching by bauvorhabenName=$bauvorhabenName.")
+        Log.d(TAG, "getBauvorhabenByName: Fetching by bauvorhabenName='$bauvorhabenName'.")
         db.collection("bauvorhaben").whereEqualTo("name", bauvorhabenName).get()
             .addOnCompleteListener {
                 Log.d(TAG, "getBauvorhabenByName: Fetched.")
@@ -159,11 +173,13 @@ object FirestoreRepo {
         // Get subcollection "eintraege" of bauvorhabenDoc
         val eintraegeColl = bauvorhabenDoc.collection("eintraege")
         // Create document of eintrag
-        // TODO: Complete gracefully when offline
-        eintraegeColl.document().set(data)
-            .addOnCompleteListener { task ->
-                onResult(task.isSuccessful)
-            }
+        eintraegeColl.document().set(data).addOnCompleteListener {
+            Log.d(TAG, "createEintragDoc: Created. isSuccess=${it.isSuccessful}")
+        }
+
+        // Give the illusion of work being done. Then call onResult.
+        illusionOfWorkDelay()
+        onResult(true)
     }
 
     /////////////////////////////////////////////////////////////
@@ -183,10 +199,12 @@ object FirestoreRepo {
         // Get subcollection "spezialEintraege" of bauvorhabenDoc
         val spezialColl = bauvorhabenDoc.collection("spezialEintraege")
         // Create document of eintrag
-        // TODO: Complete gracefully when offline
-        spezialColl.document().set(data)
-            .addOnCompleteListener { task ->
-                onResult(task.isSuccessful)
-            }
+        spezialColl.document().set(data).addOnCompleteListener {
+            Log.d(TAG, "createSpezialEintragDoc: Created. isSuccess=${it.isSuccessful}")
+        }
+
+        // Give the illusion of work being done. Then call onResult.
+        illusionOfWorkDelay()
+        onResult(true)
     }
 }

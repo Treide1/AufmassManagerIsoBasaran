@@ -18,11 +18,11 @@ import androidx.navigation.NavHostController
 import com.example.aufmassmanageriso_basaran.presentation.MainViewModel
 import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationItem
 import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationWrapper
-import com.example.aufmassmanageriso_basaran.ui.screens.CreateBauvorhabenScreen
-import com.example.aufmassmanageriso_basaran.ui.screens.CreateEintragScreen
-import com.example.aufmassmanageriso_basaran.ui.screens.CreateSpezialScreen
+import com.example.aufmassmanageriso_basaran.ui.screens.BauvorhabenHinzufuegenScreen
+import com.example.aufmassmanageriso_basaran.ui.screens.EintragHinzufuegenScreen
+import com.example.aufmassmanageriso_basaran.ui.screens.SpezialHinzufuegenScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.InformationenScreen
-import com.example.aufmassmanageriso_basaran.ui.screens.SelectBauvorhabenScreen
+import com.example.aufmassmanageriso_basaran.ui.screens.BauvorhabenAuswaehlenScreen
 
 /**
  * Main entry point for the app. Contains a [NavigationWrapper] with the different screens.
@@ -59,7 +59,7 @@ fun AufmassManagerApp(
                 icon = Icons.Filled.DomainAdd,
                 route = "bauvorhaben_add",
                 screen = {
-                    CreateBauvorhabenScreen(
+                    BauvorhabenHinzufuegenScreen(
                         form = model.bauvorhabenForm,
                         createBauvorhaben = model::createBauvorhaben,
                         onAbort = {
@@ -84,7 +84,7 @@ fun AufmassManagerApp(
                         model.onOpenSelectBauvorhabenScreen()
                     }
 
-                    SelectBauvorhabenScreen(
+                    BauvorhabenAuswaehlenScreen(
                         searchText = searchText,
                         searchResults = searchResults,
                         isSearching = isSearching,
@@ -104,7 +104,7 @@ fun AufmassManagerApp(
                         navHostController.navigate(mainScreenRoute)
                         Toast.makeText(LocalContext.current, "Kein Bauvorhaben ausgewählt", Toast.LENGTH_SHORT).show()
                     } else {
-                        CreateEintragScreen(
+                        EintragHinzufuegenScreen(
                             form = model.eintragForm,
                             bauvorhabenName = selectedBauvorhaben!!.name,
                             createEintrag = model::createEintrag,
@@ -128,7 +128,7 @@ fun AufmassManagerApp(
                         navHostController.navigate(mainScreenRoute)
                         Toast.makeText(LocalContext.current, "Kein Bauvorhaben ausgewählt", Toast.LENGTH_SHORT).show()
                     } else {
-                        CreateSpezialScreen(
+                        SpezialHinzufuegenScreen(
                             form = model.spezialForm,
                             bauvorhabenName = selectedBauvorhaben!!.name,
                             createSpezial = model::createSpezial

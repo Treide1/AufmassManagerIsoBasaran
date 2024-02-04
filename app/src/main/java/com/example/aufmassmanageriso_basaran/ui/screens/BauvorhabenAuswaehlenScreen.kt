@@ -44,7 +44,7 @@ import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTh
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SelectBauvorhabenScreen(
+fun BauvorhabenAuswaehlenScreen(
     // Search
     searchText: String = "",
     searchResults: List<String> = emptyList(),
@@ -180,7 +180,7 @@ fun SelectBauvorhabenScreen(
 @Composable
 fun SelectBauvorhabenScreenPreview() {
     AufmassManagerIsoBasaranTheme {
-        SelectBauvorhabenScreen(
+        BauvorhabenAuswaehlenScreen(
             selectedBauvorhaben = BauvorhabenDto(
                 name = "Bauvorhaben 1",
                 aufmassNummer = 1,
