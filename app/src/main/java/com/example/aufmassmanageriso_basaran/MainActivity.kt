@@ -5,7 +5,6 @@ import android.net.ConnectivityManager
 import android.net.ConnectivityManager.NetworkCallback
 import android.net.Network
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,10 +13,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.aufmassmanageriso_basaran.data.remote.FirestoreRepo
 import com.example.aufmassmanageriso_basaran.data.settings.SettingsRepo
-import com.example.aufmassmanageriso_basaran.ui.AufmassManagerApp
+import com.example.aufmassmanageriso_basaran.data.zip.ZipRepo
+import com.example.aufmassmanageriso_basaran.logging.Logger
 import com.example.aufmassmanageriso_basaran.presentation.MainViewModel
 import com.example.aufmassmanageriso_basaran.presentation.MainViewModelFactory
+import com.example.aufmassmanageriso_basaran.ui.AufmassManagerApp
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
+
 
 private const val USER_PREFERENCES_NAME = "user_preferences"
 
@@ -27,31 +29,29 @@ private val Context.dataStore by preferencesDataStore(
 
 class MainActivity : ComponentActivity() {
 
-    val TAG = "MainActivity"
+    val logger = Logger("MainActivityLogger")
 
     private val networkCallback: NetworkCallback = object : NetworkCallback() {
         override fun onAvailable(network: Network) {
-            Log.e(TAG, "NetworkCallback: The default network is now: $network")
+            logger.e("NetworkCallback: The default network is now: $network")
         }
 
         override fun onLost(network: Network) {
-            Log.e(
-                TAG,
-                "NetworkCallback: The application no longer has a default network. The last default network was $network"
-            )
+            logger.e("NetworkCallback: The application no longer has a default network. The last default network was $network")
         }
 
         override fun onUnavailable() {
-            Log.e(TAG, "NetworkCallback: The application no longer has a default network.")
+            logger.e("NetworkCallback: The application no longer has a default network.")
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Logger.init(filesDir)
+        ZipRepo.init(this)
 
         val connectivityManager = getSystemService(ConnectivityManager::class.java)
         connectivityManager.registerDefaultNetworkCallback(networkCallback)
-
         FirestoreRepo.startConnectionListener()
 
         val settingsRepo = SettingsRepo(dataStore = dataStore)

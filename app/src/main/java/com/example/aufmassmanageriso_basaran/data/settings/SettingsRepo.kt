@@ -1,6 +1,5 @@
 package com.example.aufmassmanageriso_basaran.data.settings
 
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -8,6 +7,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.BauvorhabenDto
+import com.example.aufmassmanageriso_basaran.logging.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -18,7 +18,7 @@ class SettingsRepo(
     private val dataStore: DataStore<Preferences>
 ) {
 
-    private val TAG = "SettingsRepo"
+    private val logger = Logger("SettingsRepo")
 
     private companion object {
         val selectedBauvorhaben_bauvorhaben = stringPreferencesKey("selectedBauvorhaben_bauvorhaben")
@@ -29,7 +29,7 @@ class SettingsRepo(
     }
 
     private fun Preferences.toSettingsDto(): SettingsDto {
-        Log.d(TAG, "Called toUserSettingsDto")
+        logger.d("Called toUserSettingsDto")
         val preferences = this
         val dtoOrNull = run {
             BauvorhabenDto(
@@ -40,7 +40,7 @@ class SettingsRepo(
                 _docID = preferences[selectedBauvorhaben__docId],
             )
         }
-        Log.d(TAG, "toUserSettingsDto: dtoOrNull=$dtoOrNull")
+        logger.d("toUserSettingsDto: dtoOrNull=$dtoOrNull")
         return SettingsDto(selectedBauvorhaben = dtoOrNull)
     }
 
@@ -48,7 +48,7 @@ class SettingsRepo(
      * Update the selected bauvorhaben in the user preferences.
      */
     suspend fun updateSelectedBauvorhaben(dto: BauvorhabenDto) {
-        Log.d(TAG, "updateSelectedBauvorhaben: $dto")
+        logger.d("updateSelectedBauvorhaben: $dto")
         dataStore.edit { preferences ->
             preferences[selectedBauvorhaben_bauvorhaben] = dto.name
             preferences[selectedBauvorhaben_aufmassNummer] = dto.aufmassNummer
@@ -56,14 +56,14 @@ class SettingsRepo(
             dto.notiz?.let { preferences[selectedBauvorhaben_notiz] = it }
             dto._docID?.let { preferences[selectedBauvorhaben__docId] = it }
         }
-        dataStore.data.first().let { Log.d(TAG, "updateSelectedBauvorhaben: dataStore.data=$it") }
+        dataStore.data.first().let { logger.d("updateSelectedBauvorhaben: dataStore.data=$it") }
     }
 
     /**
      * Remove the selected bauvorhaben from the user preferences.
      */
     suspend fun removeSelectedBauvorhaben() {
-        Log.d(TAG, "removeSelectedBauvorhaben")
+        logger.d("removeSelectedBauvorhaben")
         dataStore.edit { preferences ->
             preferences.remove(selectedBauvorhaben_bauvorhaben)
             preferences.remove(selectedBauvorhaben_aufmassNummer)
@@ -80,14 +80,14 @@ class SettingsRepo(
         .catch { exception ->
             // dataStore.data throws an IOException when an error is encountered when reading data
             if (exception is IOException) {
-                Log.i(TAG, "Reading data resulted in IOException. Emitting emptyPreferences instead.")
+                logger.i("Reading data resulted in IOException. Emitting emptyPreferences instead.")
                 emit(emptyPreferences())
             } else {
-                Log.e(TAG, "Error reading preferences.", exception)
+                logger.e("Error reading preferences.", exception)
                 throw exception
             }
         }.map { preferences ->
-            Log.d(TAG, "userPreferencesFlow: preferences=$preferences")
+            logger.d("userPreferencesFlow: preferences=$preferences")
             preferences.toSettingsDto()
         }
 

@@ -1,9 +1,10 @@
 package com.example.aufmassmanageriso_basaran.data.remote
 
-import android.util.Log
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.BauvorhabenDto
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.EintragDto
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.SpezialDto
+import com.example.aufmassmanageriso_basaran.logging.Logger
+import com.example.aufmassmanageriso_basaran.logging.replaceZeitstempel
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
@@ -23,10 +24,7 @@ import kotlinx.coroutines.runBlocking
 
 object FirestoreRepo {
 
-    /**
-     * Tag for logging.
-     */
-    private const val TAG = "FirestoreRepo"
+    private val logger = Logger("FirestoreRepo")
 
     /**
      * Delay for offline write to give the illusion work being done
@@ -66,24 +64,24 @@ object FirestoreRepo {
     private var listener: ListenerRegistration? = null
 
     fun startConnectionListener() {
-        Log.d(TAG, "startConnectionListener: Starting.")
+        logger.d("startConnectionListener: Starting.")
         listener = db.collection("meta").document("fetch_me")
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, e ->
                 if (e != null) {
-                    Log.w(TAG, "checkSyncedWithServer: Listen failed.", e)
+                    logger.w("startConnectionListener: Listen failed.", e)
                     return@addSnapshotListener
                 }
                 // If snapshot is not null and isFromCache is true, then the data is local.
                 val isFromCache = snapshot?.metadata?.isFromCache ?: false
                 val source = if (isFromCache) "Local" else "Server"
 
-                Log.d(TAG, "checkSyncedWithServer: source=$source")
+                logger.d("startConnectionListener: source=$source")
                 _isSyncedWithServer.update { isFromCache.not() }
             }
     }
 
     fun stopConnectionListener() {
-        Log.d(TAG, "stopConnectionListener: Stopping.")
+        logger.d("stopConnectionListener: Stopping.")
         listener?.remove()
     }
 
@@ -96,7 +94,7 @@ object FirestoreRepo {
     /////////////////////////////////////////////////////////////
 
     fun createBauvorhabenDoc(dto: BauvorhabenDto, onResult: (isSuccess: Boolean) -> Unit) {
-        Log.i(TAG, "createBauvorhaben: Creating. dto=$dto")
+        logger.i("createBauvorhaben: Creating. dto=$dto")
 
         val data = hashMapOf(
             "name" to dto.name,
@@ -105,6 +103,7 @@ object FirestoreRepo {
             "notiz" to dto.notiz,
             "zeitstempel" to FieldValue.serverTimestamp(),
         )
+        logger.logObject(listOf("createBauvorhaben"), data.replaceZeitstempel())
 
         val bauvorhabenColl = db.collection("bauvorhaben")
         val metaBauvorhabenDoc = db.collection("meta").document("bauvorhaben")
@@ -115,7 +114,7 @@ object FirestoreRepo {
             // Add this to the meta document via array union
             transaction.update(metaBauvorhabenDoc, "projection_name", FieldValue.arrayUnion(dto.name))
         }.addOnCompleteListener { task ->
-            Log.d(TAG, "createBauvorhaben: Transaction complete. isSuccessful=${task.isSuccessful}")
+            logger.d("createBauvorhaben: Transaction complete. isSuccessful=${task.isSuccessful}")
         }
 
         // Give the illusion of work being done. Then call onResult.
@@ -124,20 +123,20 @@ object FirestoreRepo {
     }
 
     fun getMetaBauvorhabenDoc(onSuccess: (doc: DocumentSnapshot) -> Unit, onFailure: (e: Exception) -> Unit) {
-        Log.d(TAG, "getMetaBauvorhabenDoc: Fetching.")
+        logger.d("getMetaBauvorhabenDoc: Fetching.")
         db.collection("meta").document("bauvorhaben").get()
             .addOnCompleteListener {
-                Log.d(TAG, "getMetaBauvorhabenDoc: Fetched.")
+                logger.d("getMetaBauvorhabenDoc: Fetched.")
             }
             .addOnSuccessListener(onSuccess)
             .addOnFailureListener(onFailure)
     }
 
     fun getBauvorhabenByName(bauvorhabenName: String, onComplete: (task: Task<QuerySnapshot>) -> Unit = {}) {
-        Log.d(TAG, "getBauvorhabenByName: Fetching by bauvorhabenName='$bauvorhabenName'.")
+        logger.d("getBauvorhabenByName: Fetching by bauvorhabenName='$bauvorhabenName'.")
         db.collection("bauvorhaben").whereEqualTo("name", bauvorhabenName).get()
             .addOnCompleteListener {
-                Log.d(TAG, "getBauvorhabenByName: Fetched.")
+                logger.d("getBauvorhabenByName: Fetched.")
             }
             .addOnCompleteListener(onComplete)
     }
@@ -145,7 +144,7 @@ object FirestoreRepo {
     /////////////////////////////////////////////////////////////
 
     fun createEintragDoc(dto: EintragDto, docId: String, onResult: (isSuccess: Boolean) -> Unit) {
-        Log.i(TAG, "createEintragDoc: Creating. dto=$dto, docId=$docId")
+        logger.i("createEintragDoc: Creating. dto=$dto, docId=$docId")
 
         val data = hashMapOf(
             "bereich" to dto.bereich,
@@ -167,6 +166,7 @@ object FirestoreRepo {
             "notiz" to dto.notiz,
             "zeitstempel" to FieldValue.serverTimestamp(),
         )
+        logger.logObject(listOf("createEintragDoc"), data.replaceZeitstempel())
 
         // Get document with name = bauvorhabenName
         val bauvorhabenDoc = db.collection("bauvorhaben").document(docId)
@@ -174,7 +174,7 @@ object FirestoreRepo {
         val eintraegeColl = bauvorhabenDoc.collection("eintraege")
         // Create document of eintrag
         eintraegeColl.document().set(data).addOnCompleteListener {
-            Log.d(TAG, "createEintragDoc: Created. isSuccess=${it.isSuccessful}")
+            logger.d("createEintragDoc: Created. isSuccess=${it.isSuccessful}")
         }
 
         // Give the illusion of work being done. Then call onResult.
@@ -185,7 +185,7 @@ object FirestoreRepo {
     /////////////////////////////////////////////////////////////
 
     fun createSpezialEintragDoc(dto: SpezialDto, docId: String, onResult: (isSuccess: Boolean) -> Unit) {
-        Log.i(TAG, "createSpezialEintragDoc: Creating. dto=$dto, docId=$docId")
+        logger.i("createSpezialEintragDoc: Creating. dto=$dto, docId=$docId")
 
         val data = hashMapOf(
             "bereich" to dto.bereich,
@@ -193,6 +193,7 @@ object FirestoreRepo {
             "notiz" to dto.notiz,
             "zeitstempel" to FieldValue.serverTimestamp(),
         )
+        logger.logObject(listOf("createSpezialEintragDoc"), data.replaceZeitstempel())
 
         // Get document with name = bauvorhabenName
         val bauvorhabenDoc = db.collection("bauvorhaben").document(docId)
@@ -200,7 +201,7 @@ object FirestoreRepo {
         val spezialColl = bauvorhabenDoc.collection("spezialEintraege")
         // Create document of eintrag
         spezialColl.document().set(data).addOnCompleteListener {
-            Log.d(TAG, "createSpezialEintragDoc: Created. isSuccess=${it.isSuccessful}")
+            logger.d("createSpezialEintragDoc: Created. isSuccess=${it.isSuccessful}")
         }
 
         // Give the illusion of work being done. Then call onResult.

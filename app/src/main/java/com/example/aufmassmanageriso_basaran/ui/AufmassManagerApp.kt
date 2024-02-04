@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddBox
 import androidx.compose.material.icons.filled.Domain
 import androidx.compose.material.icons.filled.DomainAdd
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material.icons.filled.SyncProblem
@@ -139,6 +140,17 @@ fun AufmassManagerApp(
                         }
                     }
 
+                }
+            ),
+            NavigationItem(
+                title = "Backup herunterladen",
+                icon = Icons.Filled.Download,
+                route = "download_backup",
+                screen = {
+                    LaunchedEffect(key1 = null) {
+                        model.downloadBackup()
+                        navHostController.navigate(mainScreenRoute)
+                    }
                 }
             )
         ),

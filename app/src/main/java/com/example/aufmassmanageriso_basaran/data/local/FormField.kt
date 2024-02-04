@@ -1,6 +1,6 @@
 package com.example.aufmassmanageriso_basaran.data.local
 
-import android.util.Log
+import com.example.aufmassmanageriso_basaran.logging.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -18,7 +18,7 @@ abstract class FormField(
         /**
          * Tag for logging.
          */
-        private const val TAG = "FormField"
+        private val logger = Logger("FormField")
     }
 
     internal val _text = MutableStateFlow(initialValue)
@@ -28,7 +28,7 @@ abstract class FormField(
 
     fun validate(): Boolean {
         error = onValidateToError(text.value)
-        Log.d(TAG, "validate: Validating. name=$name, text=${text.value} => error = $error")
+        logger.d("validate: Validating. name=$name, text=${text.value} => error = $error")
         return error == null
     }
 

@@ -1,8 +1,8 @@
 package com.example.aufmassmanageriso_basaran.data.local
 
-import android.util.Log
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import com.example.aufmassmanageriso_basaran.logging.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +20,7 @@ abstract class Form {
         /**
          * Tag for logging.
          */
-        private const val TAG = "Form"
+        private val logger = Logger("Form")
     }
 
     private val _fields = MutableStateFlow(listOf<FormField>())
@@ -118,7 +118,7 @@ abstract class Form {
      * It is recommended to call `super.validate()` for consistency.
      */
     open fun validate(): Boolean {
-        Log.d(TAG, "validate: Validating. fields=${_fields.value}")
+        logger.d("validate: Validating. fields=${_fields.value}")
         return _fields.value.all { it.validate() }
     }
 
