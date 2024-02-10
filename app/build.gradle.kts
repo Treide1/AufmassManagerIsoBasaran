@@ -12,11 +12,11 @@ android {
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.example.aufmassmanageriso_basaran"
+        applicationId = "de.lukas-henke-business.aufmassmanager_isobasaran"
         minSdk = 24
         targetSdk = 33
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -102,4 +102,13 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+}
+
+// TODO: Write a task that zips the APK file with a custom name
+tasks.register("createZipArtifact") {
+    group = "custom"
+    doLast {
+        val apkFile = File(project.buildDir, "outputs/apk/debug/app-debug.apk")
+        val zipFile = File(project.buildDir, "outputs/apk/debug/app-debug.apk.zip")
+    }
 }
