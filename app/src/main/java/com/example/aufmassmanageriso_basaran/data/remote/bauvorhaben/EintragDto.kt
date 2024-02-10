@@ -18,7 +18,7 @@ data class EintragDto(
     val halter: Int,
     val flansch: Int,
     val ventil: Int,
-    val schmutzfilter: Int,
+    val schmutzfaenger: Int,
     val dreiWegeVentil: Int,
     val notiz: String?
 )

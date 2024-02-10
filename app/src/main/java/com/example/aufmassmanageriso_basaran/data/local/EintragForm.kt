@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.mapLatest
  *   * `halter`: number
  *   * `flansch`: number
  *   * `ventil`: number
- *   * `schmutzfilter`: number
+ *   * `schmutzfaenger`: number
  *   * `dreiWegeVentil`: number
  *   * `notiz`: string
  *   * `zeitstempel`: timestamp (automatisch generiert)
@@ -95,7 +95,7 @@ class EintragForm: Form() {
     var halter by addIntFormField("Halter")
     var flansch by addIntFormField("Flansch")
     var ventil by addIntFormField("Ventil")
-    var schmutzfilter by addIntFormField("Schmutzfilter")
+    var schmutzfaenger by addIntFormField("Schmutzfänger")
     var dreiWegeVentil by addIntFormField("Drei-Wege-Ventil")
 
     var notiz by addTextFormField(

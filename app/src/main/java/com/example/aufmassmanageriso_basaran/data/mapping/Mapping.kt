@@ -53,7 +53,7 @@ fun EintragForm.toDto() = EintragDto(
     halter = halter.toIntBlankAsZero(),
     flansch = flansch.toIntBlankAsZero(),
     ventil = ventil.toIntBlankAsZero(),
-    schmutzfilter = schmutzfilter.toIntBlankAsZero(),
+    schmutzfaenger = schmutzfaenger.toIntBlankAsZero(),
     dreiWegeVentil = dreiWegeVentil.toIntBlankAsZero(),
     notiz = notiz.ifBlank { null }
 )

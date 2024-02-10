@@ -124,7 +124,7 @@ object FirestoreRepo {
             "halter" to dto.halter,
             "flansch" to dto.flansch,
             "ventil" to dto.ventil,
-            "schmutzfilter" to dto.schmutzfilter,
+            "schmutzfaenger" to dto.schmutzfaenger,
             "dreiWegeVentil" to dto.dreiWegeVentil,
             "notiz" to dto.notiz,
             "zeitstempel" to FieldValue.serverTimestamp(),

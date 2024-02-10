@@ -83,7 +83,7 @@ Aufbau der Datenbank in Firestore:
   * `halter`: number
   * `flansch`: number
   * `ventil`: number
-  * `schmutzfilter`: number
+  * `schmutzfaenger`: number
   * `dreiWegeVentil`: number
   * `notiz`: string
   * `zeitstempel`: timestamp (automatisch generiert)
