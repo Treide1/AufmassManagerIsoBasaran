@@ -148,6 +148,7 @@ class MainViewModel(
         if (form.validate().not()) {
             Log.d(TAG, "createEintrag: Validation failed. form=$form")
             displayMsgToUser("Bitte fülle alle Pflichtfelder aus.")
+            return
         }
         Log.d(TAG, "createEintrag: Validation success. form=$form")
 
@@ -176,6 +177,7 @@ class MainViewModel(
         if (form.validate().not()) {
             Log.d(TAG, "createSpezial: Validation failed. form=$form")
             displayMsgToUser("Bitte fülle alle Pflichtfelder aus.")
+            return
         }
         Log.d(TAG, "createSpezial: Validation success. form=$form")
 
