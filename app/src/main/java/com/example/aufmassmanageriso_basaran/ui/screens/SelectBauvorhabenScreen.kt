@@ -54,7 +54,7 @@ fun SelectBauvorhabenScreen(
     onSearchTextChange: (text: String) -> Unit = {},
     // Selection
     selectedBauvorhaben: BauvorhabenDto? = null,
-    selectBauvorhabenByName: (name: String) -> Unit = {}
+    selectBauvorhabenByName: (name: String?) -> Unit = {}
 ) {
 
     // Selection mask
@@ -175,12 +175,6 @@ fun SelectBauvorhabenScreen(
                 }
             }
         }
-        ButtonRow {
-            OutlinedButton(onClick = { /*TODO*/ }) {
-                Text(text = "Auswahl aufheben")
-            }
-        }
-
     }
 }
 

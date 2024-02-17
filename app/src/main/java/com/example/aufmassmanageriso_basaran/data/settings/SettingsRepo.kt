@@ -60,6 +60,20 @@ class SettingsRepo(
     }
 
     /**
+     * Remove the selected bauvorhaben from the user preferences.
+     */
+    suspend fun removeSelectedBauvorhaben() {
+        Log.d(TAG, "removeSelectedBauvorhaben")
+        dataStore.edit { preferences ->
+            preferences.remove(selectedBauvorhaben_bauvorhaben)
+            preferences.remove(selectedBauvorhaben_aufmassNummer)
+            preferences.remove(selectedBauvorhaben_auftragsNummer)
+            preferences.remove(selectedBauvorhaben_notiz)
+            preferences.remove(selectedBauvorhaben__docId)
+        }
+    }
+
+    /**
      * Get the user preferences flow.
      */
     val userPreferencesFlow: Flow<SettingsDto?> = dataStore.data

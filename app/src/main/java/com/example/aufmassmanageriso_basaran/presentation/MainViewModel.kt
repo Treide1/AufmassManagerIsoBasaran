@@ -110,9 +110,18 @@ class MainViewModel(
         )
     }
 
-    fun selectBauvorhaben(bauvorhabenName: String) {
-        // TODO: Perform as transaction. If failed, invalidate cache.
+    /**
+     * Selects bauvorhaben by [bauvorhabenName]. If null, deselects any bauvorhaben.
+     */
+    fun selectBauvorhaben(bauvorhabenName: String?) {
         Log.d(TAG, "selectBauvorhaben: Selecting for bauvorhabenName=$bauvorhabenName.")
+        if (bauvorhabenName == null) {
+            viewModelScope.launch {
+                Log.d(TAG, "selectBauvorhaben: bauvorhabenName is null. Thus deselecting.")
+                settingsRepo.removeSelectedBauvorhaben()
+            }
+            return
+        }
 
         // Fetch bauvorhabenDto
         FirestoreRepo.getBauvorhabenByName(bauvorhabenName) { task ->
