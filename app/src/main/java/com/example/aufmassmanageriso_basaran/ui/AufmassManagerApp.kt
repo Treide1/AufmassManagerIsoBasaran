@@ -37,9 +37,9 @@ fun AufmassManagerApp(
 ) {
     val isSynced by model.isSyncedWithServer.collectAsState()
     val selectedBauvorhaben by model.selectedBauvorhaben.collectAsState()
-    val home = "home"
+    val mainScreenRoute = "informationen"
 
-    // Fetch data when app
+    // Fetch data when app is started
     LaunchedEffect(Unit) {
         model.fetchBauvorhabenNames()
     }
@@ -49,7 +49,7 @@ fun AufmassManagerApp(
             NavigationItem(
                 title = "Informationen",
                 icon = Icons.Filled.Info,
-                route = home,
+                route = mainScreenRoute,
                 screen = {
                     InformationenScreen()
                 }
@@ -65,7 +65,7 @@ fun AufmassManagerApp(
                         onAbort = {
                             // Clear form fields and navigate back
                             model.bauvorhabenForm.clearFields()
-                            navHostController.navigate(home)
+                            navHostController.navigate(mainScreenRoute)
                         }
                     )
                 }
@@ -101,7 +101,7 @@ fun AufmassManagerApp(
                 screen = {
                     if (selectedBauvorhaben == null) {
                         // Navigate back if no bauvorhaben is selected
-                        navHostController.navigate(home)
+                        navHostController.navigate(mainScreenRoute)
                         Toast.makeText(LocalContext.current, "Kein Bauvorhaben ausgewählt", Toast.LENGTH_SHORT).show()
                     } else {
                         CreateEintragScreen(
@@ -111,7 +111,7 @@ fun AufmassManagerApp(
                             onAbort = {
                                 // Clear form fields and navigate back
                                 model.eintragForm.clearFields()
-                                navHostController.navigate(home)
+                                navHostController.navigate(mainScreenRoute)
                             }
                         )
                     }
@@ -125,7 +125,7 @@ fun AufmassManagerApp(
                 screen = {
                     if (selectedBauvorhaben == null) {
                         // Navigate back if no bauvorhaben is selected
-                        navHostController.navigate(home)
+                        navHostController.navigate(mainScreenRoute)
                         Toast.makeText(LocalContext.current, "Kein Bauvorhaben ausgewählt", Toast.LENGTH_SHORT).show()
                     } else {
                         CreateSpezialScreen(
@@ -135,7 +135,7 @@ fun AufmassManagerApp(
                         ) {
                             // Clear form fields and navigate back
                             model.spezialForm.clearFields()
-                            navHostController.navigate(home)
+                            navHostController.navigate(mainScreenRoute)
                         }
                     }
 
