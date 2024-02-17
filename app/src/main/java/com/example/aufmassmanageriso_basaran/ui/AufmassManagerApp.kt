@@ -3,11 +3,9 @@ package com.example.aufmassmanageriso_basaran.ui
 import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddBox
-import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material.icons.filled.Domain
 import androidx.compose.material.icons.filled.DomainAdd
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LibraryAdd
 import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material.icons.filled.SyncProblem
 import androidx.compose.runtime.Composable
@@ -42,9 +40,9 @@ fun AufmassManagerApp(
     val selectedBauvorhaben by model.selectedBauvorhaben.collectAsState()
     val home = "home"
 
-    // Fetch data when opening screen
+    // Fetch data when app
     LaunchedEffect(Unit) {
-        model.onOpenSelectBauvorhabenScreen()
+        model.fetchBauvorhabenNames()
     }
 
     NavigationWrapper(
