@@ -1,5 +1,6 @@
 package com.example.aufmassmanageriso_basaran.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -82,7 +83,13 @@ fun SelectBauvorhabenScreen(
                     .fillMaxWidth()
                     .menuAnchor()
                     .focusRequester(focusRequester),
-                trailingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null) },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        modifier = Modifier.clickable { isSearchDisplayed = true },
+                        contentDescription = null
+                    )
+                },
                 placeholder = { Text(text = "Suche") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -108,7 +115,6 @@ fun SelectBauvorhabenScreen(
                         DropdownMenuItem(
                             text = { Text(text = bauvorhabenName) },
                             onClick = {
-                                println("Selected Bauvorhaben: $bauvorhabenName")
                                 selectBauvorhabenByName(bauvorhabenName)
                                 isSearchDisplayed = false
                                 focusRequester.freeFocus()

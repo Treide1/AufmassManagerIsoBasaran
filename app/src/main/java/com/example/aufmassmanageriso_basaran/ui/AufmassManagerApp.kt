@@ -37,6 +37,7 @@ fun AufmassManagerApp(
     navHostController: NavHostController
 ) {
     val isSynced by model.isSyncedWithServer.collectAsState()
+    val selectedBauvorhaben by model.selectedBauvorhaben.collectAsState()
     val home = "home"
 
     // Fetch data when opening screen
@@ -77,8 +78,6 @@ fun AufmassManagerApp(
                     val searchResults by model.searchResults.collectAsState()
                     val isSearching by model.isSearching.collectAsState()
 
-                    val selectedBauvorhaben by model.selectedBauvorhaben.collectAsState()
-
                     // Fetch data when opening screen
                     LaunchedEffect(Unit) {
                         model.onOpenSelectBauvorhabenScreen()
@@ -99,8 +98,6 @@ fun AufmassManagerApp(
                 icon = Icons.Filled.AddBox,
                 route = "add_entry",
                 screen = {
-                    val selectedBauvorhaben by model.selectedBauvorhaben.collectAsState()
-
                     if (selectedBauvorhaben == null) {
                         // Navigate back if no bauvorhaben is selected
                         navHostController.navigate(home)
