@@ -25,11 +25,7 @@ class DecimalSummingField(
         _text.value = value
     }
 
-    fun appendText(value: String) {
-        _text.update { it + value }
-    }
-
-    fun delChar() {
-        _text.update { it.dropLast(1) }
+    fun setText(value: String) {
+        _text.update { value }
     }
 }

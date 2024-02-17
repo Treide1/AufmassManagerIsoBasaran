@@ -45,12 +45,6 @@ class TextFormField internal constructor(
             return activeInput.replace(Regex("[^0-9]"), "")
         }
 
-        fun cleanInputJustDecimalsAndPlus(activeInput: String): String {
-            return activeInput
-                .replace(Regex("[.,]"), ".")
-                .replace(Regex("[^0-9.+]"), "")
-        }
-
         fun validateNotBlank(value: String): String? {
             return when {
                 value.isBlank() -> "Bitte fülle dieses Feld aus."
