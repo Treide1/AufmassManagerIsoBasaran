@@ -33,7 +33,8 @@ fun DocumentSnapshot.toDto(): BauvorhabenDto {
         name = doc["name"] as String,
         aufmassNummer = doc["aufmassNummer"] as Long,
         auftragsNummer = doc["auftragsNummer"] as Long?,
-        notiz = doc["notiz"] as String?
+        notiz = doc["notiz"] as String?,
+        _docID = doc.id
     )
 }
 

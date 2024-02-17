@@ -53,22 +53,22 @@ class MainViewModel(
     val bauvorhabenForm = BauvorhabenForm()
 
     fun createBauvorhaben(form: BauvorhabenForm) {
-        Log.d(TAG, "createBauvorhaben: Creating. form=$form")
+        Log.d(TAG, "createBauvorhaben: Creating.")
         if (form.validate().not()) {
-            Log.d(TAG, "createBauvorhaben: Validation failed. form=$form")
+            Log.d(TAG, "createBauvorhaben: Validation failed.")
             displayMsgToUser("Bitte fülle alle Pflichtfelder aus.")
             return
         }
         Log.d(TAG, "createBauvorhaben: Validation success. form=$form")
 
         FirestoreRepo.createBauvorhabenDoc(form.toDto()) { isSuccess ->
-            Log.d(TAG, "createBauvorhaben: isSuccess=$isSuccess")
+            Log.d(TAG, "createBauvorhaben: createBauvorhabenDoc with isSuccess=$isSuccess")
             if (isSuccess.not()) {
                 Log.e(TAG, "createBauvorhaben: Could not create bauvorhaben.")
                 displayMsgToUser("Fehler beim Erstellen des Bauvorhabens.")
                 return@createBauvorhabenDoc
             }
-            Log.d(TAG, "createBauvorhaben: Created. form=$form")
+            Log.d(TAG, "createBauvorhaben: Created.")
             displayMsgToUser("Bauvorhaben wurde erstellt.")
 
             form.clearFields()
@@ -99,33 +99,35 @@ class MainViewModel(
         Log.d(TAG, "fetchBauvorhabenNames: Fetching...")
         FirestoreRepo.getMetaBauvorhabenDoc(
             onSuccess = { doc ->
+                Log.d(TAG, "fetchBauvorhabenNames: Fetched.")
                 val projection = doc.get("projection_name") as List<String>
                 _bauvorhabenNames.update { projection }
             },
             onFailure = { e ->
-                Log.e(TAG, "fetchBauvorhabenNames: Could not fetch bauvorhabenNames.", e)
-                displayMsgToUser("Fehler: "+ (e.message ?: "Keine Fehler-Nachricht erhalten."))
+                Log.e(TAG, "fetchBauvorhabenNames: getMetaBauvorhabenDoc with failure.", e)
+                displayMsgToUser("Fehler: "+ (e.message ?: "(Keine Fehler-Nachricht erhalten.)"))
             }
         )
     }
 
     fun selectBauvorhaben(bauvorhabenName: String) {
         // TODO: Perform as transaction. If failed, invalidate cache.
-        Log.d(TAG, "selectBauvorhaben: Selecting. bauvorhabenName=$bauvorhabenName")
+        Log.d(TAG, "selectBauvorhaben: Selecting for bauvorhabenName=$bauvorhabenName.")
 
         // Fetch bauvorhabenDto
         FirestoreRepo.getBauvorhabenByName(bauvorhabenName) { task ->
             viewModelScope.launch {
-                Log.d(TAG, "selectBauvorhaben: getBauvorhabenDoc.isSuccessful=${task.isSuccessful}")
+                Log.d(TAG, "selectBauvorhaben: getBauvorhabenByName resulted in isSuccessful=${task.isSuccessful}")
                 val docs = task.result.documents
                 // If 0 or 2+ bauvorhaben with same name exist, log error and return.
                 if (docs.size != 1) {
-                    Log.e(TAG, "selectBauvorhaben: Found n=${docs.size} bauvorhaben with name $bauvorhabenName.")
+                    Log.e(TAG, "selectBauvorhaben: Found n=${docs.size} bauvorhaben docs with name $bauvorhabenName.")
                     displayMsgToUser("Fehler beim Auswählen des Bauvorhabens.")
                     return@launch
                 }
 
                 // Update selected bauvorhaben in user preferences
+                Log.d(TAG, "selectBauvorhaben: Updating selected bauvorhaben for SettingsRepo.")
                 val dto = docs.first().toDto()
                 settingsRepo.updateSelectedBauvorhaben(dto)
             }
@@ -142,27 +144,34 @@ class MainViewModel(
     // Create Eintrag
     val eintragForm = EintragForm()
 
-    fun createEintrag(form: EintragForm, bauvorhabenName: String) {
-        Log.d(TAG, "createEintrag: Creating. form=$form, bauvorhabenName=$bauvorhabenName")
+    fun createEintrag() {
+        val docId = selectedBauvorhaben.value?._docID
+        Log.d(TAG, "createEintrag: Creating. docId=$docId")
 
-        if (form.validate().not()) {
-            Log.d(TAG, "createEintrag: Validation failed. form=$form")
+        if (eintragForm.validate().not()) {
+            Log.d(TAG, "createEintrag: Validation failed.")
             displayMsgToUser("Bitte fülle alle Pflichtfelder aus.")
             return
         }
-        Log.d(TAG, "createEintrag: Validation success. form=$form")
+        Log.d(TAG, "createEintrag: Validation success.")
 
-        FirestoreRepo.createEintragDoc(form.toDto(), bauvorhabenName) { isSuccess ->
-            Log.d(TAG, "createEintrag: isSuccess=$isSuccess")
+        if (docId == null) {
+            Log.e(TAG, "createEintrag: docId is null.")
+            displayMsgToUser("Fehler beim Erstellen des Eintrags.")
+            return
+        }
+
+        FirestoreRepo.createEintragDoc(eintragForm.toDto(), docId) { isSuccess ->
+            Log.d(TAG, "createEintrag: createEintragDoc with isSuccess=$isSuccess")
             if (isSuccess.not()) {
                 Log.e(TAG, "createEintrag: Could not create eintrag.")
                 displayMsgToUser("Fehler beim Erstellen des Eintrags.")
                 return@createEintragDoc
             }
-            Log.d(TAG, "createEintrag: Created. form=$form, ")
+            Log.d(TAG, "createEintrag: Created.")
             displayMsgToUser("Eintrag wurde erstellt.")
 
-            form.clearFields()
+            eintragForm.clearFields()
         }
     }
 
@@ -171,27 +180,34 @@ class MainViewModel(
     // Create Spezial (a.k.a. SpezialEintrag)
     val spezialForm = SpezialForm()
 
-    fun createSpezial(form: SpezialForm, bauvorhabenName: String) {
-        Log.d(TAG, "createSpezial: Creating. form=$form, bauvorhabenName=$bauvorhabenName")
+    fun createSpezial() {
+        val docId = selectedBauvorhaben.value?._docID
+        Log.d(TAG, "createSpezial: Creating. form=$spezialForm, docId=$docId")
 
-        if (form.validate().not()) {
-            Log.d(TAG, "createSpezial: Validation failed. form=$form")
+        if (spezialForm.validate().not()) {
+            Log.d(TAG, "createSpezial: Validation failed.")
             displayMsgToUser("Bitte fülle alle Pflichtfelder aus.")
             return
         }
-        Log.d(TAG, "createSpezial: Validation success. form=$form")
+        Log.d(TAG, "createSpezial: Validation success.")
 
-        FirestoreRepo.createSpezialEintragDoc(form.toDto(), bauvorhabenName) { isSuccess ->
-            Log.d(TAG, "createSpezial: isSuccess=$isSuccess")
+        if (docId == null) {
+            Log.e(TAG, "createSpezial: docId is null.")
+            displayMsgToUser("Fehler beim Erstellen des Spezial-Eintrags.")
+            return
+        }
+
+        FirestoreRepo.createSpezialEintragDoc(spezialForm.toDto(), docId) { isSuccess ->
+            Log.d(TAG, "createSpezial: createSpezialEintragDoc with isSuccess=$isSuccess")
             if (isSuccess.not()) {
                 Log.e(TAG, "createSpezial: Could not create spezialEintrag.")
                 displayMsgToUser("Fehler beim Erstellen des Spezial-Eintrags.")
                 return@createSpezialEintragDoc
             }
-            Log.d(TAG, "createSpezial: Created. form=$form, ")
+            Log.d(TAG, "createSpezial: Created. ")
             displayMsgToUser("Spezial-Eintrag wurde erstellt.")
 
-            form.clearFields()
+            spezialForm.clearFields()
         }
     }
 

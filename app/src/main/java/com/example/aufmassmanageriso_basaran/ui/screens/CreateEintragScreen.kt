@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -34,11 +35,12 @@ import com.example.aufmassmanageriso_basaran.ui.components.DerivedTextLabel
 import com.example.aufmassmanageriso_basaran.ui.components.FormTextInput
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateEintragScreen(
     form: EintragForm,
     bauvorhabenName: String,
-    createEintrag: (form: EintragForm, bauvorhabenName: String) -> Unit = { _, _ -> },
+    createEintrag: () -> Unit = {},
     onAbort: () -> Unit = {}
 ) {
     val fields by form.fields.collectAsState()
@@ -96,7 +98,7 @@ fun CreateEintragScreen(
 
             // Create
             OutlinedButton(
-                onClick = { createEintrag(form, bauvorhabenName) }
+                onClick = createEintrag
             ) {
                 Text(text = "Erstellen")
             }
@@ -104,7 +106,6 @@ fun CreateEintragScreen(
         //////////////////////////
     }
 }
-
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable

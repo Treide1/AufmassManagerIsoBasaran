@@ -14,7 +14,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.example.aufmassmanageriso_basaran.presentation.MainViewModel
 import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationItem
@@ -22,7 +21,7 @@ import com.example.aufmassmanageriso_basaran.ui.navigation.NavigationWrapper
 import com.example.aufmassmanageriso_basaran.ui.screens.CreateBauvorhabenScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.CreateEintragScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.CreateSpezialScreen
-import com.example.aufmassmanageriso_basaran.ui.screens.HomeScreen
+import com.example.aufmassmanageriso_basaran.ui.screens.InformationenScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.SelectBauvorhabenScreen
 
 /**
@@ -52,22 +51,24 @@ fun AufmassManagerApp(
                 icon = Icons.Filled.Info,
                 route = home,
                 screen = {
-                    HomeScreen()
+                    InformationenScreen()
                 }
             ),
             NavigationItem(
                 title = "Bauvorhaben hinzufügen",
                 icon = Icons.Filled.DomainAdd,
                 route = "bauvorhaben_add",
-                screen = { CreateBauvorhabenScreen(
-                    form = model.bauvorhabenForm,
-                    createBauvorhaben = model::createBauvorhaben,
-                    onAbort = {
-                        // Clear form fields and navigate back
-                        model.bauvorhabenForm.clearFields()
-                        navHostController.navigate(home)
-                    }
-                ) }
+                screen = {
+                    CreateBauvorhabenScreen(
+                        form = model.bauvorhabenForm,
+                        createBauvorhaben = model::createBauvorhaben,
+                        onAbort = {
+                            // Clear form fields and navigate back
+                            model.bauvorhabenForm.clearFields()
+                            navHostController.navigate(home)
+                        }
+                    )
+                }
             ),
             NavigationItem(
                 title = "Bauvorhaben auswählen",
@@ -128,16 +129,14 @@ fun AufmassManagerApp(
                         Toast.makeText(LocalContext.current, "Kein Bauvorhaben ausgewählt", Toast.LENGTH_SHORT).show()
                     } else {
                         CreateSpezialScreen(
-                            coroutineContext = model.viewModelScope.coroutineContext,
                             form = model.spezialForm,
                             bauvorhabenName = selectedBauvorhaben!!.name,
-                            createSpezial = model::createSpezial,
-                            onAbort = {
-                                // Clear form fields and navigate back
-                                model.spezialForm.clearFields()
-                                navHostController.navigate(home)
-                            }
-                        )
+                            createSpezial = model::createSpezial
+                        ) {
+                            // Clear form fields and navigate back
+                            model.spezialForm.clearFields()
+                            navHostController.navigate(home)
+                        }
                     }
 
                 }

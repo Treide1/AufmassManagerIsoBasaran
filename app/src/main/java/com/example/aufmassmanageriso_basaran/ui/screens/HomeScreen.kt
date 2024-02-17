@@ -9,7 +9,6 @@ import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SyncProblem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,10 +37,10 @@ import androidx.compose.ui.unit.sp
  * * Create Eintrag for normal Aufmaß
  * * Create Spezial for Aufmaß out of the ordinary
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun InformationenScreen() {
 
+    // TODO: Clean up text
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -49,7 +48,7 @@ fun HomeScreen() {
         horizontalAlignment = CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(text = "Willkommen im IsoBasaran Aufmaß-Manager!", fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)
+        Text(text = "Willkommen im Iso-Basaran Aufmaß-Manager!", fontWeight = FontWeight.ExtraBold, textAlign = TextAlign.Center)
         Text(text = "Bauvorhaben", textDecoration = TextDecoration.Underline, textAlign = TextAlign.Center)
         Text(text = """
 Bevor du Einträge erstellen kannst, muss ein Bauvorhaben ausgewählt sein. Gehe zu "Bauvorhaben auswählen" und wähle ein Bauvorhaben aus. Falls das Bauvorhaben nicht in der Liste ist, erstelle ein Neues unter "Bauvorhaben hinzufügen".
@@ -92,6 +91,6 @@ Erstelle einen Eintrag für ein normales Aufmaß unter "Eintrag erstellen". Fall
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
-fun HomeScreenPreview() {
-    HomeScreen()
+fun InformationenScreenPreview() {
+    InformationenScreen()
 }
