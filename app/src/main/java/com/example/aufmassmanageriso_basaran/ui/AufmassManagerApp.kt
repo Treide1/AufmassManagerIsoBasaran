@@ -40,6 +40,11 @@ fun AufmassManagerApp(
     val isSynced by model.isSyncedWithServer.collectAsState()
     val home = "home"
 
+    // Fetch data when opening screen
+    LaunchedEffect(Unit) {
+        model.onOpenSelectBauvorhabenScreen()
+    }
+
     NavigationWrapper(
         items = listOf(
             NavigationItem(

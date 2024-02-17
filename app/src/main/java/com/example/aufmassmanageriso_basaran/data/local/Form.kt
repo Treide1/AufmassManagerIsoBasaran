@@ -94,16 +94,12 @@ abstract class Form {
         initialValue: String = "",
         isRequired: Boolean = false,
         isRetained: Boolean = false,
-        imeAction: ImeAction = ImeAction.Next,
         onValidateToError: (value: String) -> String? = { null }
-    ): TextFormField = TextFormField(
+    ): DecimalSummingField = DecimalSummingField(
         name,
         initialValue,
         isRequired,
         isRetained,
-        KeyboardType.Phone,
-        imeAction,
-        TextFormField::cleanInputJustDecimalsAndPlus, //cleanInputSummingDecimals,
         onValidateToError
     ).also { _fields.update { fields -> fields + it } }
 
