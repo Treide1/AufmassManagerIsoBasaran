@@ -122,8 +122,6 @@ fun AufmassManagerApp(
                 icon = Icons.Filled.NoteAdd,
                 route = "add_special_entry",
                 screen = {
-                    val selectedBauvorhaben by model.selectedBauvorhaben.collectAsState()
-
                     if (selectedBauvorhaben == null) {
                         // Navigate back if no bauvorhaben is selected
                         navHostController.navigate(home)
