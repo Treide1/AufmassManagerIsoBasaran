@@ -4,6 +4,8 @@ import android.widget.Toast
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddBox
 import androidx.compose.material.icons.filled.Construction
+import androidx.compose.material.icons.filled.Domain
+import androidx.compose.material.icons.filled.DomainAdd
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LibraryAdd
 import androidx.compose.material.icons.filled.NoteAdd
@@ -57,7 +59,7 @@ fun AufmassManagerApp(
             ),
             NavigationItem(
                 title = "Bauvorhaben hinzufügen",
-                icon = Icons.Filled.LibraryAdd,
+                icon = Icons.Filled.DomainAdd,
                 route = "bauvorhaben_add",
                 screen = { CreateBauvorhabenScreen(
                     form = model.bauvorhabenForm,
@@ -71,7 +73,7 @@ fun AufmassManagerApp(
             ),
             NavigationItem(
                 title = "Bauvorhaben auswählen",
-                icon = Icons.Filled.Construction,
+                icon = Icons.Filled.Domain,
                 route = "bauvorhaben_select",
                 screen = {
                     val searchText by model.searchText.collectAsState()
