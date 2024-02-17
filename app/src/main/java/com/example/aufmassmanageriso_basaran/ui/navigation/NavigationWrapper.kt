@@ -3,6 +3,7 @@ package com.example.aufmassmanageriso_basaran.ui.navigation
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -133,6 +134,7 @@ fun NavigationWrapper(
             Surface(
                 modifier = Modifier
                     .padding(padding)
+                    .imePadding()
                     .fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
@@ -144,6 +146,8 @@ fun NavigationWrapper(
                         composable(item.route) {
                             LaunchedEffect(item.route) { screenTitle = item.title }
                             item.screen()
+                            // IME Padding applied afterwards
+                            Spacer(modifier = Modifier.imePadding())
                         }
                     }
                 }
