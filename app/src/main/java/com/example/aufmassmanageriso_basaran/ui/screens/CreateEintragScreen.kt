@@ -37,16 +37,12 @@ import com.example.aufmassmanageriso_basaran.ui.components.DecimalSummingInput
 import com.example.aufmassmanageriso_basaran.ui.components.DerivedTextLabel
 import com.example.aufmassmanageriso_basaran.ui.components.FormTextInput
 import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlin.coroutines.CoroutineContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateEintragScreen(
     form: EintragForm,
     bauvorhabenName: String,
-    coroutineContext: CoroutineContext = CoroutineScope(Dispatchers.Default).coroutineContext,
     createEintrag: (form: EintragForm, bauvorhabenName: String) -> Unit = { _, _ -> },
     onAbort: () -> Unit = {}
 ) {

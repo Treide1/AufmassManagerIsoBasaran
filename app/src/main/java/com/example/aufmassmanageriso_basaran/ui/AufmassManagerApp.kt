@@ -8,7 +8,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LibraryAdd
 import androidx.compose.material.icons.filled.NoteAdd
 import androidx.compose.material.icons.filled.SyncProblem
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -108,7 +107,6 @@ fun AufmassManagerApp(
                         Toast.makeText(LocalContext.current, "Kein Bauvorhaben ausgewählt", Toast.LENGTH_SHORT).show()
                     } else {
                         CreateEintragScreen(
-                            coroutineContext = model.viewModelScope.coroutineContext,
                             form = model.eintragForm,
                             bauvorhabenName = selectedBauvorhaben!!.name,
                             createEintrag = model::createEintrag,
