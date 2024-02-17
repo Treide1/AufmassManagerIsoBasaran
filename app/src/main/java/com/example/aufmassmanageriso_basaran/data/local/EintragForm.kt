@@ -3,6 +3,8 @@ package com.example.aufmassmanageriso_basaran.data.local
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.aufmassmanageriso_basaran.data.mapping.convertInputMeterListe
+import com.example.aufmassmanageriso_basaran.data.mapping.roundedSum
+import com.example.aufmassmanageriso_basaran.data.mapping.toPrettyString
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
@@ -80,7 +82,7 @@ class EintragForm: Form() {
             .debounce(450L)
             .mapLatest { activeInput ->
                 try {
-                    convertInputMeterListe(activeInput).sum().toString()
+                    convertInputMeterListe(activeInput).roundedSum().toPrettyString()
                 } catch (e: Exception) {
                     "[Fehler in Summe]"
                 }

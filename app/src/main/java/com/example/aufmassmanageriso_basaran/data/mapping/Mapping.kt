@@ -44,7 +44,7 @@ fun EintragForm.toDto() = EintragDto(
     gewerk = gewerk,
     // Blank entries as 0 or 0.0
     meterListe = convertInputMeterListe(meterListe),
-    meterSumme = convertInputMeterListe(meterListe).sum(),
+    meterSumme = convertInputMeterListe(meterListe).roundedSum(),
     bogen = bogen.toIntBlankAsZero(),
     stutzen = stutzen.toIntBlankAsZero(),
     ausschnitt = ausschnitt.toIntBlankAsZero(),
