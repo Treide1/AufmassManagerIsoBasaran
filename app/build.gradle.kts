@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.aufmassmanageriso_basaran"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 33
         versionCode = 1
         versionName = "1.1"
@@ -95,7 +95,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
 
     // Apache POI: Excel
-    implementation(files("libs\\poi-5.2.5.jar"))
+    implementation(files("libs/poi-3.7.jar"))
 
     // Testing
     testImplementation("junit:junit:4.13.2")
