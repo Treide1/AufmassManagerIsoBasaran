@@ -42,7 +42,7 @@ class Logger(val tag: String) {
             val filename = (identifier + timestamp).joinToString(separator = "_" ) + ".json"
             i("Logging object to file: $filename")
             val backupFile = File(backupDir, filename)
-            backupFile.mkdirs()
+            // backupDir already performed mkdirs() in Logger.init()
             backupFile.createNewFile()
             val json = JSONObject(obj)
             backupFile.writeText(json.toString())
