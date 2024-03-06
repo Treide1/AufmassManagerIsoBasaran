@@ -3,6 +3,7 @@ package com.example.aufmassmanageriso_basaran.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.aufmassmanageriso_basaran.data.excel.createSheetWithPivotTable
 import com.example.aufmassmanageriso_basaran.data.local.BauvorhabenForm
 import com.example.aufmassmanageriso_basaran.data.local.EintragForm
 import com.example.aufmassmanageriso_basaran.data.local.SpezialForm
@@ -12,6 +13,7 @@ import com.example.aufmassmanageriso_basaran.data.settings.SettingsRepo
 import com.example.aufmassmanageriso_basaran.data.zip.FileRepo
 import com.example.aufmassmanageriso_basaran.logging.Logger
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +26,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 
 /**
@@ -271,33 +275,47 @@ class MainViewModel(
         FileRepo.launchBackupDownloadPicker()
     }
 
+    // TODO: Use `selectedBauvorhaben` to fetch data and put into excel workbook
     fun exportBauvorhaben() {
-        logger.d("exportBauvorhaben: Exporting.")
-        displayMsgToUser("Download-Ort erforderlich")
+        val docId = selectedBauvorhaben.value?._docID
+        val name = selectedBauvorhaben.value?.name
+        logger.d("exportBauvorhaben: Exporting for name='$name' and docID=$docId")
+        if (docId == null) {
+            logger.e("exportBauvorhaben: docID is null.")
+            // TODO: Fetch docId if missing for some reason, instead of hard return
+            displayMsgToUser("Syncronisierung erforderlich. Bitte gehe zu 'Bauvorhaben auswählen'.")
+            return
+        }
 
-        // TODO: use live date
-        val header = "A,B,C".split(",")
-        val row1 = "1,2,3".split(",")
-        val row2 = "4,5,6".split(",")
-        val mock = listOf(header, row1, row2)
-
+        // Setting up exporting process
         FileRepo.createWorkbookForExport = {
             logger.d("exportBauvorhaben: Creating workbook.")
-            val workbook = HSSFWorkbook().apply {
-                createSheet("Sheet1").apply {
-                    mock.forEachIndexed { i, row ->
-                        val sheetRow = createRow(i)
-                        row.forEachIndexed { j, cell ->
-                            val sheetCell = sheetRow.createCell(j)
-                            logger.d("exportBauvorhaben: Adding cell=$cell at i,j=($i,$j).")
-                            sheetCell.setCellValue(cell)
-                        }
-                    }
+            val excelExportData = runBlocking {  FirestoreRepo.getExcelExportData(docId) }
+            logger.i("exportBauvorhaben: excelExportData=$excelExportData")
+
+            val workbook = HSSFWorkbook().apply workbook@{
+                if (excelExportData == null) {
+                    logger.e("exportBauvorhaben: excelExportData is null.")
+                    displayMsgToUser("Fehler beim Exportieren.")
+                    return@workbook
                 }
+
+                val sheetContent = listOf(
+                    listOf("Name", "Aufmass-Nummer", "Auftrags-Nummer", "Notiz"),
+                    listOf(
+                        excelExportData.name,
+                        excelExportData.aufmassNummer.toString(),
+                        excelExportData.auftragsNummer?.toString() ?: "",
+                        excelExportData.notiz ?: ""
+                    )
+                )
+                createSheetWithPivotTable("Bauvorhaben", sheetContent)
             }
             logger.d("exportBauvorhaben: Created workbook.")
             workbook
         }
+        // Launching export picker
+        displayMsgToUser("Download-Ort erforderlich")
         logger.d("exportBauvorhaben: Launching export picker.")
         FileRepo.launchExportExcelPicker("test")
     }

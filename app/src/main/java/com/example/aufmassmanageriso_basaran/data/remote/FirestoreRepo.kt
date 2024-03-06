@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 object FirestoreRepo {
@@ -207,5 +209,36 @@ object FirestoreRepo {
         // Give the illusion of work being done. Then call onResult.
         illusionOfWorkDelay()
         onResult(true)
+    }
+
+    /////////////////////////////////////////////////////////////
+
+    suspend fun getExcelExportData(docId: String): BauvorhabenDto? {
+        logger.d("getExcelExportData: Fetching. docId=$docId")
+        val bauvorhabenDoc = db.collection("bauvorhaben").document(docId)
+
+        // TODO: Additionally to bauvorhabenDoc, also fetch all eintraege and spezialEintraege.
+        //       This should be done as a transaction to ensure consistency.
+        val data = suspendCoroutine<Map<String, Any>?> { continuation ->
+            bauvorhabenDoc.get()
+                .addOnSuccessListener { docSnap ->
+                    logger.d("getExcelExportData: Fetched.")
+                    val data = docSnap.data!!
+                    logger.i("getExcelExportData: data=$data")
+                    continuation.resume(data)
+                }.addOnFailureListener {
+                    logger.e("getExcelExportData: Fetch failed.")
+                    continuation.resume(null)
+                }
+        } ?: return null
+
+        val result = BauvorhabenDto(
+            name = data["name"] as String,
+            aufmassNummer = data["aufmassNummer"] as Long,
+            auftragsNummer = data["auftragsNummer"] as Long?,
+            notiz = data["notiz"] as String?,
+            _docID = docId
+        )
+        return result
     }
 }

@@ -8,9 +8,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
 import com.example.aufmassmanageriso_basaran.logging.Logger
 import com.example.aufmassmanageriso_basaran.logging.Timestamper
 import com.example.aufmassmanageriso_basaran.logging.getNow
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -26,12 +32,15 @@ object FileRepo {
     private lateinit var downloadZipResultLauncher: ActivityResultLauncher<Intent>
     private lateinit var exportExcelResultLauncher: ActivityResultLauncher<Intent>
     private lateinit var contentResolver: ContentResolver
+    private lateinit var lifecycleIoScope: CoroutineScope
+
 
     fun init(activity: ComponentActivity) {
         val contract = ActivityResultContracts.StartActivityForResult()
         downloadZipResultLauncher = activity.registerForActivityResult(contract, ::downloadPickerCallback)
         exportExcelResultLauncher = activity.registerForActivityResult(contract, ::exportExcelCallback)
         contentResolver = activity.contentResolver
+        lifecycleIoScope = activity.lifecycleScope + Dispatchers.IO
     }
 
     /**
@@ -96,7 +105,7 @@ object FileRepo {
 
     ///////////////////////////////////////////////////////////////////////////
 
-    var createWorkbookForExport: () -> HSSFWorkbook = {
+    var createWorkbookForExport: suspend () -> HSSFWorkbook = {
         logger.e("exportExcelResultLauncher: no workbook creator set!")
         HSSFWorkbook()
     }
@@ -119,12 +128,15 @@ object FileRepo {
         logger.d("exportExcelResultLauncher: result=$result")
         if (result.resultCode == ComponentActivity.RESULT_OK) {
             if (result.data != null) {
-                val uri = result.data!!.data!!
-                logger.i("exportExcelResultLauncher: uri=$uri")
-                contentResolver.openOutputStream(uri)?.use { outputStream ->
-                    logger.i("exportExcelResultLauncher: writing to outputStream")
-                    val workbook = createWorkbookForExport()
-                    workbook.write(outputStream)
+                // Perform the export in a coroutine to not block main
+                lifecycleIoScope.launch(CoroutineName("exportExcelCallbackLaunch")) {
+                    val uri = result.data!!.data!!
+                    logger.i("exportExcelResultLauncher: uri=$uri")
+                    contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        logger.i("exportExcelResultLauncher: writing to outputStream")
+                        val workbook = createWorkbookForExport()
+                        workbook.write(outputStream)
+                    }
                 }
             }
         }

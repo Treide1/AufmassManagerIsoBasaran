@@ -40,6 +40,7 @@ fun AufmassManagerApp(
     val isSynced by model.isSyncedWithServer.collectAsState()
     val selectedBauvorhaben by model.selectedBauvorhaben.collectAsState()
     val mainScreenRoute = "informationen"
+    val noBauvorhabenSelectedMsg = "Kein Bauvorhaben ausgewählt"
 
     // Fetch data when app is started
     LaunchedEffect(Unit) {
@@ -104,7 +105,7 @@ fun AufmassManagerApp(
                     if (selectedBauvorhaben == null) {
                         // Navigate back if no bauvorhaben is selected
                         navHostController.navigate(mainScreenRoute)
-                        Toast.makeText(LocalContext.current, "Kein Bauvorhaben ausgewählt", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(LocalContext.current, noBauvorhabenSelectedMsg, Toast.LENGTH_SHORT).show()
                     } else {
                         EintragHinzufuegenScreen(
                             form = model.eintragForm,
@@ -128,7 +129,7 @@ fun AufmassManagerApp(
                     if (selectedBauvorhaben == null) {
                         // Navigate back if no bauvorhaben is selected
                         navHostController.navigate(mainScreenRoute)
-                        Toast.makeText(LocalContext.current, "Kein Bauvorhaben ausgewählt", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(LocalContext.current, noBauvorhabenSelectedMsg, Toast.LENGTH_SHORT).show()
                     } else {
                         SpezialHinzufuegenScreen(
                             form = model.spezialForm,
@@ -149,6 +150,7 @@ fun AufmassManagerApp(
                 route = "export_excel",
                 screen = {
                     ExportBauvorhabenScreen(
+                        bauvorhabenName = selectedBauvorhaben?.name ?: noBauvorhabenSelectedMsg,
                         onExport = model::exportBauvorhaben
                     )
                 }
