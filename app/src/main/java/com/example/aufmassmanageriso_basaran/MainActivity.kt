@@ -13,7 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.aufmassmanageriso_basaran.data.remote.FirestoreRepo
 import com.example.aufmassmanageriso_basaran.data.settings.SettingsRepo
-import com.example.aufmassmanageriso_basaran.data.zip.ZipRepo
+import com.example.aufmassmanageriso_basaran.data.zip.FileRepo
 import com.example.aufmassmanageriso_basaran.logging.Logger
 import com.example.aufmassmanageriso_basaran.presentation.MainViewModel
 import com.example.aufmassmanageriso_basaran.presentation.MainViewModelFactory
@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Logger.init(filesDir)
-        ZipRepo.init(this)
+        FileRepo.init(this)
 
         val connectivityManager = getSystemService(ConnectivityManager::class.java)
         connectivityManager.registerDefaultNetworkCallback(networkCallback)

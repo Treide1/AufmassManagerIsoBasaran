@@ -24,6 +24,7 @@ import com.example.aufmassmanageriso_basaran.ui.screens.EintragHinzufuegenScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.SpezialHinzufuegenScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.InformationenScreen
 import com.example.aufmassmanageriso_basaran.ui.screens.BauvorhabenAuswaehlenScreen
+import com.example.aufmassmanageriso_basaran.ui.screens.ExportBauvorhabenScreen
 
 /**
  * Main entry point for the app. Contains a [NavigationWrapper] with the different screens.
@@ -143,7 +144,17 @@ fun AufmassManagerApp(
                 }
             ),
             NavigationItem(
-                title = "Backup herunterladen",
+                title = "Excel exportieren",
+                icon = Icons.Filled.Download,
+                route = "export_excel",
+                screen = {
+                    ExportBauvorhabenScreen(
+                        onExport = model::exportBauvorhaben
+                    )
+                }
+            ),
+            NavigationItem(
+                title = "Backup herunterladen...",
                 icon = Icons.Filled.Download,
                 route = "download_backup",
                 screen = {

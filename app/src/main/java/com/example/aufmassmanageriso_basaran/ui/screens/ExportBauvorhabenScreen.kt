@@ -18,7 +18,9 @@ import com.example.aufmassmanageriso_basaran.ui.theme.AufmassManagerIsoBasaranTh
 
 
 @Composable
-fun ExportBauvorhabenScreen() {
+fun ExportBauvorhabenScreen(
+    onExport: () -> Unit = {}
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -30,7 +32,8 @@ fun ExportBauvorhabenScreen() {
         ButtonRow {
             TextButton(
                 onClick = {
-                    // TODO: Mithilfe von HssWorkbook exportieren
+                    // TODO: Mithilfe von HssfWorkbook exportieren
+                    onExport()
                 }
             ) {
                 Text(text = "Bauvorhaben exportieren")

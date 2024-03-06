@@ -9,7 +9,7 @@ import com.example.aufmassmanageriso_basaran.data.local.SpezialForm
 import com.example.aufmassmanageriso_basaran.data.mapping.toDto
 import com.example.aufmassmanageriso_basaran.data.remote.FirestoreRepo
 import com.example.aufmassmanageriso_basaran.data.settings.SettingsRepo
-import com.example.aufmassmanageriso_basaran.data.zip.ZipRepo
+import com.example.aufmassmanageriso_basaran.data.zip.FileRepo
 import com.example.aufmassmanageriso_basaran.logging.Logger
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.apache.poi.hssf.usermodel.HSSFWorkbook
 
 /**
 * Main view model holding the state values and performs state logic of the app.
@@ -267,7 +268,38 @@ class MainViewModel(
 
     fun downloadBackup() {
         logger.d("downloadBackup: Opening Location Picker and download on result.")
-        ZipRepo.launchBackupDownloadPicker()
+        FileRepo.launchBackupDownloadPicker()
+    }
+
+    fun exportBauvorhaben() {
+        logger.d("exportBauvorhaben: Exporting.")
+        displayMsgToUser("Download-Ort erforderlich")
+
+        // TODO: use live date
+        val header = "A,B,C".split(",")
+        val row1 = "1,2,3".split(",")
+        val row2 = "4,5,6".split(",")
+        val mock = listOf(header, row1, row2)
+
+        FileRepo.createWorkbookForExport = {
+            logger.d("exportBauvorhaben: Creating workbook.")
+            val workbook = HSSFWorkbook().apply {
+                createSheet("Sheet1").apply {
+                    mock.forEachIndexed { i, row ->
+                        val sheetRow = createRow(i)
+                        row.forEachIndexed { j, cell ->
+                            val sheetCell = sheetRow.createCell(j)
+                            logger.d("exportBauvorhaben: Adding cell=$cell at i,j=($i,$j).")
+                            sheetCell.setCellValue(cell)
+                        }
+                    }
+                }
+            }
+            logger.d("exportBauvorhaben: Created workbook.")
+            workbook
+        }
+        logger.d("exportBauvorhaben: Launching export picker.")
+        FileRepo.launchExportExcelPicker("test")
     }
 }
 
