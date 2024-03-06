@@ -11,6 +11,7 @@ android {
     namespace = "com.example.aufmassmanageriso_basaran"
     compileSdk = 33
 
+    //noinspection OldTargetApi // Justification: Hardcoded version for now
     defaultConfig {
         applicationId = "com.example.aufmassmanageriso_basaran"
         minSdk = 26
@@ -61,7 +62,7 @@ android {
     }
 }
 
-//noinspection GradleDependency
+//noinspection GradleDependency // Justification: Hardcoded version for now
 dependencies {
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
