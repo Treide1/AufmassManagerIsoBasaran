@@ -234,4 +234,13 @@ object FirestoreRepo {
                 }
         }
     }
+
+    fun markExcelDataAsExported(docId: String) {
+        logger.d("markExcelDataAsExported: Marking. docId=$docId")
+        val bauvorhabenDoc = db.collection("bauvorhaben").document(docId)
+        bauvorhabenDoc.update("letzterExportAm", FieldValue.serverTimestamp())
+            .addOnCompleteListener {
+                logger.d("markExcelDataAsExported: Marked. isSuccess=${it.isSuccessful}")
+            }
+    }
 }

@@ -311,6 +311,11 @@ class MainViewModel(
             logger.d("exportBauvorhaben: Created workbook.")
             workbook
         }
+        FileRepo.onWorkbookExported = {
+            logger.d("exportBauvorhaben: Workbook exported.")
+            displayMsgToUser("Bauvorhaben wurde exportiert.")
+            FirestoreRepo.markExcelDataAsExported(docId)
+        }
         // Launching export picker
         displayMsgToUser("Download-Ort erforderlich")
         logger.d("exportBauvorhaben: Launching export picker.")

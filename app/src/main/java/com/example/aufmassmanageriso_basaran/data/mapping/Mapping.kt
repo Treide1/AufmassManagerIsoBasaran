@@ -37,7 +37,7 @@ fun DocumentSnapshot.toDto(): BauvorhabenDto {
         notiz = doc["notiz"] as String?,
         _docID = doc.id,
         _zeitstempel = doc["zeitstempel"] as? Timestamp,
-        _letzterExportZeitstempel = doc["letzterExportZeitstempel"] as? Timestamp
+        _letzterExportZeitstempel = doc["letzterExportAm"] as? Timestamp
     )
 }
 

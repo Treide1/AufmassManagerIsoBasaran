@@ -110,6 +110,10 @@ object FileRepo {
         HSSFWorkbook()
     }
 
+    var onWorkbookExported: suspend () -> Unit = {
+        logger.e("exportExcelResultLauncher: no onWorkbookExported set!")
+    }
+
     fun launchExportExcelPicker(
         bauvorhabenName: String
     ) {
@@ -136,6 +140,7 @@ object FileRepo {
                         logger.i("exportExcelResultLauncher: writing to outputStream")
                         val workbook = createWorkbookForExport()
                         workbook.write(outputStream)
+                        onWorkbookExported()
                     }
                 }
             }
