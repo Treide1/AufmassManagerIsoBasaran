@@ -9,9 +9,9 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
-import com.example.aufmassmanageriso_basaran.logging.Logger
-import com.example.aufmassmanageriso_basaran.logging.Timestamper
-import com.example.aufmassmanageriso_basaran.logging.getNow
+import com.example.aufmassmanageriso_basaran.data.utility.logging.Logger
+import com.example.aufmassmanageriso_basaran.data.utility.timestamping.Timestamper
+import com.example.aufmassmanageriso_basaran.data.utility.getNow
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

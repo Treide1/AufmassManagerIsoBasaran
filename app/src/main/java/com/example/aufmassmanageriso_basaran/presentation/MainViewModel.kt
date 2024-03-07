@@ -3,7 +3,9 @@ package com.example.aufmassmanageriso_basaran.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.aufmassmanageriso_basaran.data.excel.BAUVORHABEN_EXCEL_HEADER_ROW
 import com.example.aufmassmanageriso_basaran.data.excel.createSheetWithPivotTable
+import com.example.aufmassmanageriso_basaran.data.excel.toExcelContentRow
 import com.example.aufmassmanageriso_basaran.data.local.BauvorhabenForm
 import com.example.aufmassmanageriso_basaran.data.local.EintragForm
 import com.example.aufmassmanageriso_basaran.data.local.SpezialForm
@@ -11,7 +13,7 @@ import com.example.aufmassmanageriso_basaran.data.mapping.toDto
 import com.example.aufmassmanageriso_basaran.data.remote.FirestoreRepo
 import com.example.aufmassmanageriso_basaran.data.settings.SettingsRepo
 import com.example.aufmassmanageriso_basaran.data.zip.FileRepo
-import com.example.aufmassmanageriso_basaran.logging.Logger
+import com.example.aufmassmanageriso_basaran.data.utility.logging.Logger
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -288,7 +290,9 @@ class MainViewModel(
         // Setting up exporting process
         FileRepo.createWorkbookForExport = {
             logger.d("exportBauvorhaben: Creating workbook.")
-            val excelExportData = runBlocking {  FirestoreRepo.getExcelExportData(docId) }
+            val excelExportData = runBlocking {
+                FirestoreRepo.getExcelExportData(docId)
+            }
             logger.i("exportBauvorhaben: excelExportData=$excelExportData")
 
             val workbook = HSSFWorkbook().apply workbook@{
@@ -299,13 +303,8 @@ class MainViewModel(
                 }
 
                 val sheetContent = listOf(
-                    listOf("Name", "Aufmass-Nummer", "Auftrags-Nummer", "Notiz"),
-                    listOf(
-                        excelExportData.name,
-                        excelExportData.aufmassNummer.toString(),
-                        excelExportData.auftragsNummer?.toString() ?: "",
-                        excelExportData.notiz ?: ""
-                    )
+                    BAUVORHABEN_EXCEL_HEADER_ROW,
+                    excelExportData.toExcelContentRow()
                 )
                 createSheetWithPivotTable("Bauvorhaben", sheetContent)
             }

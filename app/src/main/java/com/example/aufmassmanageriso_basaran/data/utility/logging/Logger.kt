@@ -1,6 +1,8 @@
-package com.example.aufmassmanageriso_basaran.logging
+package com.example.aufmassmanageriso_basaran.data.utility.logging
 
 import android.util.Log
+import com.example.aufmassmanageriso_basaran.data.utility.timestamping.Timestamper
+import com.example.aufmassmanageriso_basaran.data.utility.getNow
 import org.json.JSONObject
 import java.io.File
 
@@ -36,10 +38,10 @@ class Logger(val tag: String) {
         logToFile("E", msg, tr)
     }
     
-    fun logObject(identifier: List<String>, obj: Map<String, Any?>) {
+    fun logObject(identifier: String, obj: Map<String, Any?>) {
         if (isInitialized) {
             val timestamp = Timestamper.namingFormat.getNow()
-            val filename = (identifier + timestamp).joinToString(separator = "_" ) + ".json"
+            val filename = listOf(identifier, timestamp).joinToString(separator = "_" ) + ".json"
             i("Logging object to file: $filename")
             val backupFile = File(backupDir, filename)
             // backupDir already performed mkdirs() in Logger.init()

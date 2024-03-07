@@ -14,7 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.aufmassmanageriso_basaran.data.remote.FirestoreRepo
 import com.example.aufmassmanageriso_basaran.data.settings.SettingsRepo
 import com.example.aufmassmanageriso_basaran.data.zip.FileRepo
-import com.example.aufmassmanageriso_basaran.logging.Logger
+import com.example.aufmassmanageriso_basaran.data.utility.logging.Logger
 import com.example.aufmassmanageriso_basaran.presentation.MainViewModel
 import com.example.aufmassmanageriso_basaran.presentation.MainViewModelFactory
 import com.example.aufmassmanageriso_basaran.ui.AufmassManagerApp

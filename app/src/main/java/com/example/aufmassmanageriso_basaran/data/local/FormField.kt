@@ -1,6 +1,6 @@
 package com.example.aufmassmanageriso_basaran.data.local
 
-import com.example.aufmassmanageriso_basaran.logging.Logger
+import com.example.aufmassmanageriso_basaran.data.utility.logging.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

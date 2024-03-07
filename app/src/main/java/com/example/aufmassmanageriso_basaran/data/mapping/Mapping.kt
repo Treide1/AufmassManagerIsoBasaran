@@ -8,6 +8,7 @@ import com.example.aufmassmanageriso_basaran.data.local.SpezialForm
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.BauvorhabenDto
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.EintragDto
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.SpezialDto
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 
 fun BauvorhabenForm.toDto() = BauvorhabenDto(
@@ -34,7 +35,9 @@ fun DocumentSnapshot.toDto(): BauvorhabenDto {
         aufmassNummer = doc["aufmassNummer"] as Long,
         auftragsNummer = doc["auftragsNummer"] as Long?,
         notiz = doc["notiz"] as String?,
-        _docID = doc.id
+        _docID = doc.id,
+        _zeitstempel = doc["zeitstempel"] as? Timestamp,
+        _letzterExportZeitstempel = doc["letzterExportZeitstempel"] as? Timestamp
     )
 }
 

@@ -1,10 +1,11 @@
 package com.example.aufmassmanageriso_basaran.data.remote
 
+import com.example.aufmassmanageriso_basaran.data.mapping.toDto
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.BauvorhabenDto
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.EintragDto
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.SpezialDto
-import com.example.aufmassmanageriso_basaran.logging.Logger
-import com.example.aufmassmanageriso_basaran.logging.replaceZeitstempel
+import com.example.aufmassmanageriso_basaran.data.utility.logging.Logger
+import com.example.aufmassmanageriso_basaran.data.utility.replaceZeitstempel
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
@@ -105,7 +106,7 @@ object FirestoreRepo {
             "notiz" to dto.notiz,
             "zeitstempel" to FieldValue.serverTimestamp(),
         )
-        logger.logObject(listOf("createBauvorhaben"), data.replaceZeitstempel())
+        logger.logObject("createBauvorhaben", data.replaceZeitstempel())
 
         val bauvorhabenColl = db.collection("bauvorhaben")
         val metaBauvorhabenDoc = db.collection("meta").document("bauvorhaben")
@@ -168,7 +169,7 @@ object FirestoreRepo {
             "notiz" to dto.notiz,
             "zeitstempel" to FieldValue.serverTimestamp(),
         )
-        logger.logObject(listOf("createEintragDoc"), data.replaceZeitstempel())
+        logger.logObject("createEintragDoc", data.replaceZeitstempel())
 
         // Get document with name = bauvorhabenName
         val bauvorhabenDoc = db.collection("bauvorhaben").document(docId)
@@ -195,7 +196,7 @@ object FirestoreRepo {
             "notiz" to dto.notiz,
             "zeitstempel" to FieldValue.serverTimestamp(),
         )
-        logger.logObject(listOf("createSpezialEintragDoc"), data.replaceZeitstempel())
+        logger.logObject("createSpezialEintragDoc", data.replaceZeitstempel())
 
         // Get document with name = bauvorhabenName
         val bauvorhabenDoc = db.collection("bauvorhaben").document(docId)
@@ -217,28 +218,20 @@ object FirestoreRepo {
         logger.d("getExcelExportData: Fetching. docId=$docId")
         val bauvorhabenDoc = db.collection("bauvorhaben").document(docId)
 
-        // TODO: Additionally to bauvorhabenDoc, also fetch all eintraege and spezialEintraege.
-        //       This should be done as a transaction to ensure consistency.
-        val data = suspendCoroutine<Map<String, Any>?> { continuation ->
+        // TODO: Additionally to bauvorhabenDoc,
+        //  also fetch and mark all `eintraege` and `spezialEintraege` as consumed.
+        //  This should be done as a transaction to ensure consistency.
+        return suspendCoroutine { continuation ->
             bauvorhabenDoc.get()
                 .addOnSuccessListener { docSnap ->
                     logger.d("getExcelExportData: Fetched.")
                     val data = docSnap.data!!
                     logger.i("getExcelExportData: data=$data")
-                    continuation.resume(data)
+                    continuation.resume(docSnap.toDto())
                 }.addOnFailureListener {
                     logger.e("getExcelExportData: Fetch failed.")
                     continuation.resume(null)
                 }
-        } ?: return null
-
-        val result = BauvorhabenDto(
-            name = data["name"] as String,
-            aufmassNummer = data["aufmassNummer"] as Long,
-            auftragsNummer = data["auftragsNummer"] as Long?,
-            notiz = data["notiz"] as String?,
-            _docID = docId
-        )
-        return result
+        }
     }
 }

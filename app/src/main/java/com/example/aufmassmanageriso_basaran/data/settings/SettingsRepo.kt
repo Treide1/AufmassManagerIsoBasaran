@@ -7,7 +7,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.example.aufmassmanageriso_basaran.data.remote.bauvorhaben.BauvorhabenDto
-import com.example.aufmassmanageriso_basaran.logging.Logger
+import com.example.aufmassmanageriso_basaran.data.utility.logging.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first

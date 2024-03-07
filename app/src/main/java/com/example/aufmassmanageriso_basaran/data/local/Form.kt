@@ -2,7 +2,7 @@ package com.example.aufmassmanageriso_basaran.data.local
 
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import com.example.aufmassmanageriso_basaran.logging.Logger
+import com.example.aufmassmanageriso_basaran.data.utility.logging.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
